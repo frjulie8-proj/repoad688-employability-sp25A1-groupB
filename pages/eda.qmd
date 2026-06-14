@@ -164,36 +164,152 @@ fig_c1.show()
 ```
 ---
 
+
+---
+
 ## Antara: Gender Disparities in IT vs Overall Workforce (IPUMS & Lightcast)
 
-This section analyzes gender representation and wage disparities between the overall workforce and the IT workforce, using IPUMS 2024 employment data and Lightcast 2024 job postings.
+### Setup
+
+```{python}
+import sys
+sys.path.insert(0, "..")
+from analysis.utils import load_employment, PLOTLY_THEME, save_fig, apply_theme
+import plotly.express as px
+import plotly.graph_objects as go
+import pandas as pd
+
+df_emp = load_employment()
+print(f"Rows: {len(df_emp):,} | Columns: {list(df_emp.columns)}")
+```
 
 ### Gender Distribution: Overall vs IT Workforce
 
-The IT workforce is significantly male-dominated compared to the overall workforce. While the overall workforce is nearly balanced at 51.8% male and 48.2% female, the IT workforce skews heavily male at 72.4%, with women representing only 27.6% of IT workers.
+```{python}
+# IT workforce filter (OCC 1000-1999)
+df_it = df_emp[(df_emp['OCC'] >= 1000) & (df_emp['OCC'] <= 1999)]
 
-![](../assets/figures/antara_gender_distribution.png)
+categories = ['Overall Workforce', 'IT Workforce']
+male_pct = [
+    round(df_emp[df_emp['SEX_LABEL']=='Male'].shape[0] / len(df_emp) * 100, 2),
+    round(df_it[df_it['SEX_LABEL']=='Male'].shape[0] / len(df_it) * 100, 2)
+]
+female_pct = [
+    round(df_emp[df_emp['SEX_LABEL']=='Female'].shape[0] / len(df_emp) * 100, 2),
+    round(df_it[df_it['SEX_LABEL']=='Female'].shape[0] / len(df_it) * 100, 2)
+]
+
+fig1 = go.Figure()
+fig1.add_trace(go.Bar(name='Male', x=categories, y=male_pct, marker_color='#2c7bb6'))
+fig1.add_trace(go.Bar(name='Female', x=categories, y=female_pct, marker_color='#d7191c'))
+fig1.update_layout(
+    barmode='group',
+    title='Gender Distribution: Overall vs IT Workforce (2024)',
+    xaxis_title='Workforce Type',
+    yaxis_title='Percentage (%)',
+    template='plotly_white'
+)
+save_fig(fig1, 'antara_gender_distribution')
+fig1.show()
+```
 
 ### Average Wage by Gender: Overall vs IT Workforce
 
-Both the overall and IT workforces show a clear gender wage gap. In the overall workforce, women earn an average of $59,562 compared to $84,342 for men — a gap of $24,780. In the IT workforce, women earn $96,398 compared to $119,699 for men — a gap of $23,301. While IT offers higher wages for both genders, the wage gap persists.
+```{python}
+avg_overall = df_emp.groupby('SEX_LABEL')['INCWAGE'].mean().round(2)
+avg_it = df_it.groupby('SEX_LABEL')['INCWAGE'].mean().round(2)
 
-![](../assets/figures/antara_avg_wage_comparison.png)
+fig2 = go.Figure()
+fig2.add_trace(go.Bar(
+    name='Overall - Female', x=['Overall'], y=[avg_overall['Female']],
+    marker_color='#d7191c', offsetgroup=0
+))
+fig2.add_trace(go.Bar(
+    name='Overall - Male', x=['Overall'], y=[avg_overall['Male']],
+    marker_color='#2c7bb6', offsetgroup=1
+))
+fig2.add_trace(go.Bar(
+    name='IT - Female', x=['IT'], y=[avg_it['Female']],
+    marker_color='#d7191c', offsetgroup=0, showlegend=False
+))
+fig2.add_trace(go.Bar(
+    name='IT - Male', x=['IT'], y=[avg_it['Male']],
+    marker_color='#2c7bb6', offsetgroup=1, showlegend=False
+))
+fig2.update_layout(
+    barmode='group',
+    title='Average Wage by Gender: Overall vs IT Workforce (2024)',
+    xaxis_title='Workforce Type',
+    yaxis_title='Average Annual Wage ($)',
+    template='plotly_white'
+)
+save_fig(fig2, 'antara_avg_wage_comparison')
+fig2.show()
+```
 
 ### Wage Distribution by Gender: Overall vs IT Workforce
 
-The box plots reveal that the IT workforce has a higher median wage for both genders compared to the overall workforce. However, the gap between male and female median wages remains visible in both groups, with males consistently earning more across all quartiles.
+```{python}
+df_emp_plot = df_emp[df_emp['INCWAGE'] <= 300000].copy()
+df_emp_plot['Workforce'] = 'Overall'
+df_it_plot = df_it[df_it['INCWAGE'] <= 300000].copy()
+df_it_plot['Workforce'] = 'IT'
+combined = pd.concat([df_emp_plot, df_it_plot])
 
-![](../assets/figures/antara_wage_boxplot.png)
+fig3 = px.box(
+    combined,
+    x='Workforce',
+    y='INCWAGE',
+    color='SEX_LABEL',
+    title='Wage Distribution by Gender: Overall vs IT Workforce (2024)',
+    labels={'INCWAGE': 'Annual Wage ($)', 'SEX_LABEL': 'Gender', 'Workforce': 'Workforce Type'},
+    color_discrete_map={'Male': '#2c7bb6', 'Female': '#d7191c'},
+    **PLOTLY_THEME
+)
+save_fig(fig3, 'antara_wage_boxplot')
+fig3.show()
+```
 
 ### Job Postings by Career Area (Lightcast 2024)
 
-The Lightcast dataset shows that 93% of job postings fall under Information Technology and Computer Science, reinforcing the IT focus of the dataset. Business Management and Operations accounts for 6% of postings.
+```{python}
+import pandas as pd
+lc_occ = pd.read_csv('../data/processed/lightcast_occupation.csv')
+career_counts = lc_occ['LOT_V6_CAREER_AREA_NAME'].value_counts().reset_index()
+career_counts.columns = ['Career Area', 'Count']
 
-![](../assets/figures/antara_career_area.png)
+fig4 = px.bar(
+    career_counts,
+    x='Count',
+    y='Career Area',
+    orientation='h',
+    title='Job Postings by Career Area (Lightcast 2024)',
+    labels={'Count': 'Number of Job Postings', 'Career Area': ''},
+    color='Count',
+    color_continuous_scale='Blues',
+    **PLOTLY_THEME
+)
+save_fig(fig4, 'antara_career_area')
+fig4.show()
+```
 
 ### Job Postings by Occupation Group (Lightcast 2024)
 
-Within IT, Data Analysis and Mathematics and Business Intelligence are the two dominant occupation groups, each with approximately 30,000 postings. This suggests high demand for data-related roles in the current job market.
+```{python}
+occ_counts = lc_occ['LOT_V6_OCCUPATION_GROUP_NAME'].value_counts().reset_index()
+occ_counts.columns = ['Occupation Group', 'Count']
 
-![](../assets/figures/antara_occupation_group.png)
+fig5 = px.bar(
+    occ_counts,
+    x='Count',
+    y='Occupation Group',
+    orientation='h',
+    title='Job Postings by Occupation Group (Lightcast 2024)',
+    labels={'Count': 'Number of Job Postings', 'Occupation Group': ''},
+    color='Count',
+    color_continuous_scale='Reds',
+    **PLOTLY_THEME
+)
+save_fig(fig5, 'antara_occupation_group')
+fig5.show()
+```
