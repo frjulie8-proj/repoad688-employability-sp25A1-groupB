@@ -167,6 +167,15 @@ fig_c1.show()
 
 ---
 
+<style>
+.antara-section h3 {
+  text-align: center;
+  font-weight: bold;
+}
+</style>
+
+<div class="antara-section">
+
 ## Antara: Gender Disparities in IT vs Overall Workforce (IPUMS & Lightcast)
 
 ### Setup
@@ -213,6 +222,10 @@ save_fig(fig1, 'antara_gender_distribution')
 fig1.show()
 ```
 
+The overall workforce is nearly balanced at **51.8% male and 48.2% female**. However, the IT workforce is significantly male-dominated, with men representing **72.4%** and women only **27.6%**. This stark disparity highlights a persistent gender gap in IT employment, suggesting structural barriers that discourage or prevent women from entering and advancing in technology careers.
+
+---
+
 ### Average Wage by Gender: Overall vs IT Workforce
 
 ```{python}
@@ -247,6 +260,10 @@ save_fig(fig2, 'antara_avg_wage_comparison')
 fig2.show()
 ```
 
+Across both workforce types, men consistently earn more than women. In the overall workforce, women earn an average of **$59,562** compared to **$84,342** for men — a gap of **$24,780**, meaning women earn approximately **70 cents for every dollar** earned by men. In the IT workforce, wages are higher for both genders, with women earning **$96,398** and men earning **$119,699** — a gap of **$23,301**. While IT offers better compensation overall, the wage gap persists, indicating that higher-paying sectors alone do not resolve gender pay inequality.
+
+---
+
 ### Wage Distribution by Gender: Overall vs IT Workforce
 
 ```{python}
@@ -269,6 +286,10 @@ fig3 = px.box(
 save_fig(fig3, 'antara_wage_boxplot')
 fig3.show()
 ```
+
+The box plots reveal the full distribution of wages across both workforce types. In the overall workforce, the female median wage is approximately **$45,000** compared to **$60,000** for males. In the IT workforce, both medians are significantly higher — females at approximately **$85,000** and males at **$100,000**. Notably, the IT workforce shows more high-end outliers for females, suggesting some women reach very high compensation levels. However, the consistently higher male median across all groups confirms a systemic wage gap that cannot be attributed to outliers alone.
+
+---
 
 ### Job Postings by Career Area (Lightcast 2024)
 
@@ -293,6 +314,10 @@ save_fig(fig4, 'antara_career_area')
 fig4.show()
 ```
 
+The Lightcast dataset is heavily concentrated in **Information Technology and Computer Science**, which accounts for approximately **93%** of all job postings (67,714 out of 72,498). Business Management and Operations follows at 6% (4,326 postings), with Healthcare and Marketing and Public Relations representing less than 1% combined. This distribution confirms that the dataset is focused on IT and data-related roles, making it a relevant lens for studying gender disparities specifically within the technology sector.
+
+---
+
 ### Job Postings by Occupation Group (Lightcast 2024)
 
 ```{python}
@@ -313,3 +338,6 @@ fig5 = px.bar(
 save_fig(fig5, 'antara_occupation_group')
 fig5.show()
 ```
+
+Within the IT career area, **Data Analysis and Mathematics** and **Business Intelligence** are the two dominant occupation groups, each with approximately **30,000 job postings**. Network and Systems Engineering follows with 8,212 postings, while Business Analysis, Health IT Professionals, and Marketing Specialists represent smaller segments. The high demand for data and business intelligence roles aligns with broader industry trends toward data-driven decision making. Given that women are underrepresented in IT overall, understanding which occupation groups attract more diverse talent is critical for addressing gender disparities in hiring.
+</div>
