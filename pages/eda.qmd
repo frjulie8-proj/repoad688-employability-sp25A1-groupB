@@ -174,7 +174,6 @@ fig_c1.show()
 }
 </style>
 
-<div class="antara-section">
 
 ## Antara: Gender Disparities in IT vs Overall Workforce (IPUMS & Lightcast)
 
@@ -340,4 +339,3 @@ fig5.show()
 ```
 
 Within the IT career area, **Data Analysis and Mathematics** and **Business Intelligence** are the two dominant occupation groups, each with approximately **30,000 job postings**. Network and Systems Engineering follows with 8,212 postings, while Business Analysis, Health IT Professionals, and Marketing Specialists represent smaller segments. The high demand for data and business intelligence roles aligns with broader industry trends toward data-driven decision making. Given that women are underrepresented in IT overall, understanding which occupation groups attract more diverse talent is critical for addressing gender disparities in hiring.
-</div>
