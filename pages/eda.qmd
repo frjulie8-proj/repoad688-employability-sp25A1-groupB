@@ -67,6 +67,8 @@ save_fig(fig_a1, "julie_gender_wage_industry")
 fig_a1.show()
 ```
 
+Men out-earn women in every one of the 18 industries. The gap is widest in Management, where men average USD 143,608 against USD 84,137 for women, a USD 59,471 difference that leaves women earning just 59 cents for every male dollar, followed by Administrative Services (USD 45,308 gap) and Healthcare (USD 32,410). The gap is narrowest in Public Administration, where women earn 94 percent of male wages (a USD 4,507 difference), along with Construction and Mining at roughly 89 percent. Even the most equitable industry still shows a measurable shortfall, and across all employed workers women earn 70.6 cents for every dollar earned by men.
+
 ### Gender Wage Gap by State
 
 ```{python}
@@ -87,6 +89,8 @@ fig_a2 = px.choropleth(
 save_fig(fig_a2, "julie_gender_wage_state")
 fig_a2.show()
 ```
+
+The wage gap holds across all states, but its size varies geographically. It is widest in higher-wage states such as Connecticut (USD 34,906), Utah (USD 34,485), New Jersey (USD 34,151), Washington, and Massachusetts, and narrowest in South Dakota (USD 17,084), Iowa, Hawaii, Arkansas, and Wyoming. The pattern suggests male wages scale up faster than female wages as a state's overall wage level rises, so prosperity alone does not narrow the divide and may even widen it in absolute terms.
 
 ---
 
@@ -123,6 +127,8 @@ fig_b2 = px.bar(
 save_fig(fig_b2, "julie_postings_by_state")
 fig_b2.show()
 ```
+
+Job-posting demand is heavily concentrated geographically. Of 68,536 postings with an identifiable state, the top five, namely Texas (7,793), California (6,885), New York (5,251), the District of Columbia (3,744), and Florida (3,521), account for 39.7 percent of all activity. Demand clusters in large, high-output economies. These are raw counts rather than per-capita rates, so part of the concentration reflects population size, and a per-capita view could reorder smaller jurisdictions such as the District of Columbia upward.
 
 ---
 
@@ -162,6 +168,9 @@ fig_c1.update_traces(marker=dict(size=8), selector=dict(mode="markers"))
 save_fig(fig_c1, "julie_cross_state_comparison")
 fig_c1.show()
 ```
+
+Across all 51 states, average wage and posting volume are positively but only moderately correlated, and the relationship is nearly identical for women (r = 0.396) and men (r = 0.411). States with more hiring activity tend to pay more, consistent with strong labor demand lifting wages. Because the correlation is almost the same for both sexes, job-market activity relates to wages in much the same way regardless of gender and therefore does not by itself explain the persistent wage gap documented in the industry and state analyses above.
+
 ---
 
 
