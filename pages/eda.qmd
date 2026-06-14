@@ -167,14 +167,6 @@ fig_c1.show()
 
 ---
 
-<style>
-.antara-section h3 {
-  text-align: center;
-  font-weight: bold;
-}
-</style>
-
-
 ## Antara: Gender Disparities in IT vs Overall Workforce (IPUMS & Lightcast)
 
 ### Setup
