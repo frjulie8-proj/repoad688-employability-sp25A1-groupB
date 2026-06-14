@@ -29,7 +29,7 @@ PLOTLY_THEME = dict(
     colorway=["#2c7bb6", "#d7191c", "#fdae61", "#1a9641"]
 )
 
-# TODO: Yifan, Zhiyang, Alina — fill in your own row before final submission
+# TODO: Yifan — fill in your own row before final submission
 skills_data = {
     "Name":               ["Antara", "Julie", "Yifan", "Zhiyang", "Alina"],
     "Python":             [3,         3,       0,        3,         3],
