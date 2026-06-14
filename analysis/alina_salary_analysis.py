@@ -14,6 +14,7 @@ salary_clean = salary.dropna(subset=["SALARY_FROM"])
 
 plt.figure(figsize=(8,5))
 plt.hist(salary_clean["SALARY_FROM"], bins=30)
+plt.xlim(0,300000)
 plt.title("Lightcast Salary Distribution")
 plt.xlabel("Salary From")
 plt.ylabel("Number of Job Postings")
