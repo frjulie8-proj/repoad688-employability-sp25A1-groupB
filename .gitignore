@@ -19,3 +19,10 @@ data/raw/lightcast_2024_new.csv
 data/processed/lightcast_clean.csv
 assets/figures/*.html
 data/processed/*.csv
+
+# Python bytecode cache
+__pycache__/
+*.py[cod]
+
+# macOS
+.DS_Store
