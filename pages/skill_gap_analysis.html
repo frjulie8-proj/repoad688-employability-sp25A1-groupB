@@ -212,7 +212,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="team-skill-levels" class="level2">
 <h2 class="anchored" data-anchor-id="team-skill-levels">Team Skill Levels</h2>
-<div id="4a7fae7e" class="cell" data-execution_count="1">
+<div id="a296e299" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.express <span class="im">as</span> px</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.graph_objects <span class="im">as</span> go</span>
@@ -247,7 +247,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="skill-heatmap" class="level2">
 <h2 class="anchored" data-anchor-id="skill-heatmap">Skill Heatmap</h2>
-<div id="33626324" class="cell" data-execution_count="2">
+<div id="e640e7c3" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>os.makedirs(<span class="st">"assets/figures"</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> px.imshow(</span>
@@ -278,7 +278,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="top-in-demand-skills-from-lightcast-job-postings" class="level2">
 <h2 class="anchored" data-anchor-id="top-in-demand-skills-from-lightcast-job-postings">Top In-Demand Skills from Lightcast Job Postings</h2>
-<div id="ac727a57" class="cell" data-execution_count="3">
+<div id="3205eb61" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read pre-computed top skills from ETL output — no raw data loaded here</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>df_top_skills <span class="op">=</span> pd.read_csv(<span class="st">"../data/processed/lightcast_top_skills.csv"</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>df_top_skills</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -287,7 +287,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="team-average-vs-industry-requirements" class="level2">
 <h2 class="anchored" data-anchor-id="team-average-vs-industry-requirements">Team Average vs Industry Requirements</h2>
-<div id="36ba390a" class="cell" data-execution_count="4">
+<div id="00656143" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>skill_map <span class="op">=</span> {</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SQL (Programming Language)"</span>:   <span class="st">"SQL"</span>,</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Python (Programming Language)"</span>: <span class="st">"Python"</span>,</span>
