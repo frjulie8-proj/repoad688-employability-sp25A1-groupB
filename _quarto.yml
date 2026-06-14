@@ -28,5 +28,5 @@ format:
 
 execute:
   echo: true
-  eval: false
+  eval: true
   code-fold: true
