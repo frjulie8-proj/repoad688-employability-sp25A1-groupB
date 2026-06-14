@@ -274,7 +274,7 @@ fig3.show()
 
 ```{python}
 import pandas as pd
-lc_occ = pd.read_csv('../data/processed/lightcast_occupation.csv')
+lc_occ = pd.read_parquet('../data/processed/lightcast_occupation.parquet')
 career_counts = lc_occ['LOT_V6_CAREER_AREA_NAME'].value_counts().reset_index()
 career_counts.columns = ['Career Area', 'Count']
 
