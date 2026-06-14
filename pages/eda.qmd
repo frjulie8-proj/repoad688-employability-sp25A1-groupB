@@ -169,6 +169,10 @@ fig_c1.show()
 
 ## Antara: Gender Disparities in IT vs Overall Workforce (IPUMS & Lightcast)
 
+This analysis focuses on comparing the **IT workforce** against the **overall workforce** using the 2024 IPUMS employment dataset and the Lightcast job postings dataset. The IT workforce is defined as workers with Census occupation codes between **1000 and 1999**, which correspond to computer, mathematical, and information technology occupations — directly aligned with the types of roles captured in the Lightcast dataset.
+
+The decision to compare IT workers specifically against the overall workforce — rather than other sectors such as healthcare, education, or finance — is intentional. The Lightcast dataset is heavily concentrated in IT and data-related job postings (over 93% of postings fall under Information Technology and Computer Science). By isolating IT workers in the IPUMS data and benchmarking them against the broader workforce, we can identify whether gender disparities in wages and representation are unique to the IT sector or reflect a wider systemic pattern. This cross-dataset perspective allows for a more meaningful and targeted analysis of gender hiring disparities in technology roles.
+
 ### Setup
 
 ```{python}
