@@ -346,13 +346,13 @@ fig5.show()
 Within the IT career area, **Data Analysis and Mathematics** and **Business Intelligence** are the two dominant occupation groups, each with approximately **30,000 job postings**. Network and Systems Engineering follows with 8,212 postings, while Business Analysis, Health IT Professionals, and Marketing Specialists represent smaller segments. The high demand for data and business intelligence roles aligns with broader industry trends toward data-driven decision making. Given that women are underrepresented in IT overall, understanding which occupation groups attract more diverse talent is critical for addressing gender disparities in hiring.
 
 
-## Employment Rate by Age Group and Gender
+## Yifan: Employment Rate by Age Group and Gender
 
 ![](../assets/figures/employment_age_gender.png)
 
 The chart shows employment rates by age group and gender. Employment rates increase substantially from the 18–24 age group to the prime working-age groups (25–54), where both males and females maintain employment rates above 75%. Across nearly all age groups, males exhibit slightly higher employment rates than females, with the gap becoming more noticeable among older workers. Employment declines significantly after age 55, particularly for individuals aged 65 and above, reflecting retirement and reduced labor force participation. These results suggest that age plays a major role in employment status, while gender disparities remain present throughout the workforce.
 
-## Income Distribution by Gender
+## Yifan: Income Distribution by Gender
 
 ![](../assets/figures/income_gender_boxplot.png)
 
