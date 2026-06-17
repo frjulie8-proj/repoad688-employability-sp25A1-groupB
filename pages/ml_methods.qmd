@@ -119,7 +119,7 @@ top_cluster = profile.iloc[-1]["cluster"]
 
 ### The interactive map: female or male share by segment and state
 
-The map below is the supply side made explorable. Use the dropdown to choose any of the four segments together with either the female or the male share, and the choropleth recolors to that selection. The numbers behind it come from a Spark SQL query that computes, for every state and segment, the weighted female and male share in one pass. Whichever female view you pick, the elite-earner segment stays in a narrow band well below parity across the whole country, which is the same nationwide shortage the other views show, now broken out so you can confirm it for any segment yourself.
+The map below is the supply side made explorable. Use the dropdown to choose any of the four segments, or the pooled all-segments overview, together with either the female or the male share, and the choropleth recolors to that selection. The numbers behind it come from a Spark SQL query that computes, for every state and segment, the weighted female and male share in one pass. Whichever female view you pick, the elite-earner segment stays in a narrow band well below parity across the whole country, which is the same nationwide shortage the other views show, now broken out so you can confirm it for any segment yourself.
 
 ```{python}
 #| code-fold: true
@@ -127,10 +127,20 @@ The map below is the supply side made explorable. Use the dropdown to choose any
 ssx = pd.read_csv(PROCESSED / "state_segment_sex.csv")
 ssx["segment"] = ssx["cluster"].map(cluster_to_segment)
 
-combos = [(seg, sex) for seg in SEGMENTS for sex in ["Female", "Male"]]
+# Pooled "All segments" overview: weight each segment's share by its worker
+# count to get the state's overall female/male share.
+ssx["fcount"] = ssx["weighted_workers"] * ssx["pct_female"] / 100
+allseg = (ssx.groupby("STATE_CODE")
+          .agg(tot=("weighted_workers", "sum"), f=("fcount", "sum")).reset_index())
+allseg["pct_female"] = (100 * allseg["f"] / allseg["tot"]).round(1)
+allseg["pct_male"] = (100 - allseg["pct_female"]).round(1)
+
+# All-segments overview first, then each segment.
+combos = ([("All segments", sex) for sex in ["Female", "Male"]]
+          + [(seg, sex) for seg in SEGMENTS for sex in ["Female", "Male"]])
 mapfig = go.Figure()
 for seg, sex in combos:
-    sub = ssx[ssx["segment"] == seg]
+    sub = allseg if seg == "All segments" else ssx[ssx["segment"] == seg]
     col = "pct_female" if sex == "Female" else "pct_male"
     mapfig.add_trace(go.Choropleth(
         locations=sub["STATE_CODE"], locationmode="USA-states", z=sub[col],
@@ -139,21 +149,24 @@ for seg, sex in combos:
     ))
 mapfig.data[0].visible = True
 
+def _title(seg, sex):
+    where = "across all segments" if seg == "All segments" else f"in the {seg.lower()} segment"
+    return f"{sex} share {where}, by state"
+
 buttons = []
 for i, (seg, sex) in enumerate(combos):
     vis = [False] * len(combos)
     vis[i] = True
     buttons.append(dict(
         label=f"{seg} — {sex}", method="update",
-        args=[{"visible": vis},
-              {"title": f"{sex} share in the {seg.lower()} segment, by state"}],
+        args=[{"visible": vis}, {"title": _title(seg, sex)}],
     ))
 
 mapfig.update_layout(
     geo_scope="usa",
     updatemenus=[dict(buttons=buttons, x=0.0, xanchor="left",
                       y=1.12, yanchor="top", showactive=True)],
-    title=f"{combos[0][1]} share in the {combos[0][0].lower()} segment, by state",
+    title=_title(*combos[0]),
 )
 apply_theme(mapfig)
 mapfig.show()
