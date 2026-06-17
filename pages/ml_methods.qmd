@@ -4,7 +4,7 @@ title: "Predictive Modeling"
 
 ## Overview
 
-This section presents our unsupervised model for the gender pay question: a K-Means clustering of the IPUMS workforce that groups workers into comparable labor-market segments by earnings and age. We then link those segments to employer demand from the Lightcast job postings through the one dimension the two datasets genuinely share, geography. The clustering complements the wage-gap regression in the companion analysis: the regression measures how large the gender gap is, while the clustering shows where in the wage distribution that gap concentrates.
+This page presents two complementary models built on the IPUMS workforce data to answer the gender pay question from different angles. The first is a K-Means clustering of workers into comparable labor-market segments by earnings and age, linked to employer demand from the Lightcast job postings through the one dimension the two datasets genuinely share, geography. The second is a linear regression decomposition paired with a Random Forest regressor, which quantifies how much of the gender wage gap is explained by occupation and industry versus how much remains unexplained, and confirms gender's importance as a wage predictor under a flexible, non-linear model. Together, the two approaches tell a fuller story: the regression measures how large the gender gap is and how much of it survives controlling for job characteristics, while the clustering shows where in the wage distribution that gap concentrates.
 
 ## Methodology Note
 
@@ -41,7 +41,9 @@ profile["pct_female_disp"] = (profile["pct_female"] * 100).round(1)
 cluster_to_segment = dict(zip(profile["cluster"], profile["segment"]))
 ```
 
-## Step 1: Worker Segments from K-Means
+::: {.panel-tabset}
+
+## Worker Segmentation (K-Means)
 
 The silhouette score is highest at four clusters, which split the workforce into a large low-wage early-career group, a mid-wage late-career group, a smaller high-wage professional group, and a very small elite-earning group. The table below profiles each segment by its weighted average wage, average age, female share, and the industries its workers most commonly come from.
 
@@ -104,7 +106,7 @@ apply_theme(fig)
 fig.show()
 ```
 
-## Step 2: Linking Segments to Employer Demand
+### Linking Segments to Employer Demand
 
 Step 2 takes the worker segments from Step 1 and asks a geographic question. For every state we attach two kinds of information, the supply side from IPUMS, meaning how its workers are spread across the four segments and how female each segment is, and the demand side from Lightcast, meaning how many job postings that state generated. The single shared key is the state, so the join happens at the state level. The views below move from an interactive map that lets you explore any segment and either sex, to a direct political comparison.
 
@@ -117,7 +119,7 @@ top_segment = profile.iloc[-1]["segment"]          # highest-wage segment
 top_cluster = profile.iloc[-1]["cluster"]
 ```
 
-### The interactive map: female or male share by segment and state
+#### The interactive map: female or male share by segment and state
 
 The map below is the supply side made explorable. Use the dropdown to choose any of the four segments, or the pooled all-segments overview, together with either the female or the male share, and the choropleth recolors to that selection. The numbers behind it come from a Spark SQL query that computes, for every state and segment, the weighted female and male share in one pass. Whichever female view you pick, the elite-earner segment stays in a narrow band well below parity across the whole country, which is the same nationwide shortage the other views show, now broken out so you can confirm it for any segment yourself.
 
@@ -127,15 +129,12 @@ The map below is the supply side made explorable. Use the dropdown to choose any
 ssx = pd.read_csv(PROCESSED / "state_segment_sex.csv")
 ssx["segment"] = ssx["cluster"].map(cluster_to_segment)
 
-# Pooled "All segments" overview: weight each segment's share by its worker
-# count to get the state's overall female/male share.
 ssx["fcount"] = ssx["weighted_workers"] * ssx["pct_female"] / 100
 allseg = (ssx.groupby("STATE_CODE")
           .agg(tot=("weighted_workers", "sum"), f=("fcount", "sum")).reset_index())
 allseg["pct_female"] = (100 * allseg["f"] / allseg["tot"]).round(1)
 allseg["pct_male"] = (100 - allseg["pct_female"]).round(1)
 
-# All-segments overview first, then each segment.
 combos = ([("All segments", sex) for sex in ["Female", "Male"]]
           + [(seg, sex) for seg in SEGMENTS for sex in ["Female", "Male"]])
 mapfig = go.Figure()
@@ -157,9 +156,6 @@ for i, (seg, sex) in enumerate(combos):
         label=f"{seg} — {sex}", method="update", args=[{"visible": vis}],
     ))
 
-# No chart title: the dropdown label and the section heading already name the
-# view, and a title here collides with the dropdown. Extra top margin gives
-# the dropdown room.
 mapfig.update_layout(
     geo_scope="usa",
     margin=dict(t=70, b=0, l=0, r=0),
@@ -170,7 +166,7 @@ apply_theme(mapfig)
 mapfig.show()
 ```
 
-### Red versus blue states
+#### Red versus blue states
 
 Because the gender pathway asks about political influence, we also split states by their 2024 presidential result and compare the female share of the top-pay segment in blue states against red states. So that the comparison is self-explanatory, the first map below colors each state by which party carried it in 2024, giving the political geography directly rather than asking the reader to recall it. The second chart then compares the female share of the top-pay segment across those two groups. Here a modest difference does appear: blue states average close to twenty-five percent female in the top-pay segment while red states sit closer to twenty-two percent. The direction fits expectations, with women somewhat better represented at the top in blue-leaning states, but the gap between the two is small and both groups remain far below parity. So politics nudges the result a little, whereas employer demand did not, and neither comes close to closing the structural shortfall the map reveals nationwide.
 
@@ -207,23 +203,21 @@ apply_theme(fig)
 fig.show()
 ```
 
-## Implications for Job Seekers
+### Implications for Job Seekers
 
 For a woman targeting the highest-paying segment of the labor market, these results suggest that the odds of reaching that segment move very little with how active a state's hiring market is, and only modestly with its political leaning, where blue-leaning states show a small edge. Across every view the imbalance holds well below parity, so none of these levers comes close to closing it. The more useful levers are the ones the companion regression points to, namely the occupation and industry a person enters and the unexplained gap that persists even within the same kind of work. The clustering reframes the question from how much women earn on average to which earning tiers they are able to reach, and every view here shows the barrier sitting at the top of the wage distribution.
 
-## Caveats
+### Caveats (Clustering)
 
 The Lightcast salary is an advertised figure that signals demand, while the IPUMS wage is what workers actually earned, so the two are reported separately and never averaged together. Employer demand is measured at the state level because the two datasets do not share occupation coding, which means a state's posting volume repeats across that state's worker segments by design and supports a state-level comparison rather than a person-level one. The red and blue grouping reflects the 2024 presidential result and is a coarse proxy for political climate. The analysis is a single cross-sectional snapshot of roughly 2023 to 2024 rather than a trend.
 
----
-
-## Step 3: Regression Decomposition and Random Forest Feature Importance
+## Wage Gap Regression & Random Forest
 
 While the K-Means segmentation above shows *where* in the wage distribution the gender gap concentrates, this section asks a complementary question: *how much* of the gender wage gap can be explained by occupation and industry choice, versus how much remains unexplained after accounting for the job characteristics available in this dataset. We answer this with two models: a linear regression decomposition (the standard labor-economics approach to wage gap analysis) and a Random Forest regressor to confirm the finding holds under a more flexible, non-linear model.
 
 ### Methodology Note
 
-Two linear regression models were fit on the full IPUMS `employed_only` dataset (1.49M workers with positive wages): a baseline model using `AGE`, `RACE`, and `STATE_NAME`, and a full model that adds broad `OCCUPATION` and `INDUSTRY` group codes. Comparing the coefficient on `SEX` between the two models isolates how much of the gap is explained by which jobs men and women hold, versus how much persists within the same occupation and industry. A Random Forest Regressor (100 trees, max depth 10, trained on a 200,000-row sample for computational efficiency) was then used to rank feature importance across all 167 encoded features, confirming whether gender remains a top predictor even in a model that makes no assumptions about a constant linear effect. Full code is available in `analysis/ml_wage_gap_antara.ipynb`.
+Two linear regression models were fit on the full IPUMS `employed_only` dataset (1.49M workers with positive wages): a baseline model using `AGE`, `RACE`, and `STATE_NAME`, and a full model that adds broad `OCCUPATION` and `INDUSTRY` group codes. Comparing the coefficient on `SEX` between the two models isolates how much of the gap is explained by which jobs men and women hold, versus how much persists within the same occupation and industry. A Random Forest Regressor (100 trees, max depth 10, trained on a 200,000-row sample for computational efficiency) was then used to rank feature importance across all 167 encoded features, confirming whether gender remains a top predictor even in a model that makes no assumptions about a constant linear effect. Full code is available in `analysis/ml_wage_gap_antara.ipynb`. This analysis uses only the IPUMS employment data, since Lightcast records advertised job postings rather than individual worker outcomes, making it unsuitable for a wage regression on actual earners; the cross-dataset connection between job market demand and wages is explored separately in the K-Means analysis above.
 
 ```{python}
 #| code-fold: true
@@ -327,3 +321,5 @@ rf_summary
 ```
 
 The Random Forest explains `{python} f"{rf_summary.loc[1, 'value']*100:.1f}"`% of wage variance on held-out test data (Test R² = `{python} f"{rf_summary.loc[1, 'value']:.3f}"`), trained on a 200,000-row sample for computational efficiency. As with Julie's clustering analysis, these moderate R² values are expected for individual wage prediction — wages depend on many unmeasured factors — but the *relative* importance of gender among the available features, and the *consistency* of the finding across two different modeling approaches, are the meaningful takeaways here rather than overall predictive accuracy.
+
+:::
