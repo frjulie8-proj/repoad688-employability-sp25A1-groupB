@@ -154,9 +154,7 @@ ojs_define(segment_opts=["All segments"] + list(SEGMENTS))
 
 ```{ojs}
 //| echo: false
-us = fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(r => r.json())
-topojson = require("topojson-client@3")
-statesFC = topojson.feature(us, us.objects.states)
+Plotly = require("plotly.js-dist-min@2.35.2")
 ```
 
 ```{ojs}
@@ -186,24 +184,33 @@ shares = {
       const f = d3.sum(v.filter(d => d.sex === "Female"), d => d.weighted);
       return tot ? 100 * (sexSel === "Female" ? f : (tot - f)) / tot : null;
     },
-    d => d.fips);
+    d => d.STATE_CODE);
 }
 ```
 
 ```{ojs}
 //| echo: false
-Plot.plot({
-  projection: "albers-usa",
-  width: 820,
-  color: {scheme: "blues", domain: d3.extent([...shares.values()].filter(v => v != null)), legend: true, label: `% ${sexSel} (range adapts to this view)`},
-  marks: [
-    Plot.geo(statesFC.features, {
-      fill: d => shares.get(d.id) ?? "#eeeeee",
-      stroke: "white", strokeWidth: 0.5,
-      title: d => `${d.properties.name}: ${shares.get(d.id) == null ? "n/a" : shares.get(d.id).toFixed(1) + "%"}`
-    })
-  ]
-})
+mapChart = {
+  const locs = [...shares.keys()].filter(s => shares.get(s) != null);
+  const z = locs.map(s => shares.get(s));
+  const ext = d3.extent(z);            // adaptive range for this view
+  const div = html`<div style="width:100%;height:520px;"></div>`;
+  Plotly.newPlot(div, [{
+    type: "choropleth",
+    locationmode: "USA-states",
+    locations: locs,
+    z: z,
+    zmin: ext[0],
+    zmax: ext[1],
+    colorscale: "Blues",
+    colorbar: {title: `% ${sexSel}`},
+    hovertemplate: "%{location}: %{z:.1f}%<extra></extra>"
+  }], {
+    geo: {scope: "usa"},
+    margin: {t: 10, b: 0, l: 0, r: 0}
+  }, {responsive: true, displaylogo: false});
+  return div;
+}
 ```
 
 #### Red versus blue states
