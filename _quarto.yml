@@ -18,8 +18,6 @@ website:
         text: "Skill Gap Analysis"
       - href: pages/ml_methods.qmd
         text: "Predictive Modeling"
-      - href: pages/live_demo.qmd
-        text: "Live Demo"
       - href: pages/career_plan.qmd
         text: "Career Strategy"
 
