@@ -34,3 +34,13 @@ The pipeline runs in three steps via `etl/etl_pipeline.ipynb`:
 | lightcast_experience.csv | 18 | Experience range labels |
 | lightcast_occupation.csv | 2 | SOC occupation labels |
 | household.csv | 1,348,324 | IPUMS household data |
+| household_clean.csv | 1,348,324 | Cleaned household-level dataset |
+| person.csv | 3,238,312 | Individual demographic and employment records |
+| employment.csv | 3,238,312 | Employment-related extracted records |
+| employed_only.csv | 1,572,727 | Filtered employed individuals only |
+| industry_codes.csv | 265 | IPUMS industry code lookup |
+| occupation_codes.csv | 530 | IPUMS occupation code lookup |
+| lightcast_clean.csv | 8,584,763 | Fully cleaned Lightcast dataset |
+| lightcast_industry_clean.csv | 72,478 | Cleaned Lightcast industry mapping |
+| lightcast_skills.csv | 5,391,151 | Extracted skill-level records |
+| lightcast_top_skills.csv | 21 | Top aggregated skills summary |
