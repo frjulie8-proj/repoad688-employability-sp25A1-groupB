@@ -81,20 +81,24 @@ apply_theme(fig)
 fig.show()
 ```
 
-The clearest pattern is that the female share falls as segment pay rises. Women make up close to half of the low-wage and mid-wage segments, around a third of the high-wage professional segment, and under a quarter of the elite-earning segment. In other words, the higher the pay of a worker segment, the more male dominated it becomes, which is exactly the structural backdrop the wage-gap regression then quantifies.
+The clearest pattern is that the female share falls as segment pay rises. Women make up close to half of the low-wage and mid-wage segments, around a third of the high-wage professional segment, and under a quarter of the elite-earning segment. The chart below shows the female and male shares side by side within each segment. Because the IPUMS sex variable records only male or female, the male share is the exact complement of the female share, so the two series mirror each other and carry the same information. We show both because the crossover is the point: as pay rises the female bars shrink and the male bars grow, so the two genders trade places between the bottom and the top of the wage distribution. This is the structural backdrop the wage-gap regression then quantifies.
 
 ```{python}
 #| code-fold: true
-#| fig-cap: "Weighted female share of each wage segment, with a 50 percent parity reference line. Female representation declines steadily as segment pay rises."
+#| fig-cap: "Weighted female and male share within each wage segment, with a 50 percent parity reference line. Female representation falls and male representation rises as segment pay increases; the two are complements because sex is recorded as binary."
+gp = profile[["segment", "pct_female_disp"]].copy()
+gp["Female"] = gp["pct_female_disp"]
+gp["Male"] = (100 - gp["pct_female_disp"]).round(1)
+gender_long = gp.melt(id_vars="segment", value_vars=["Female", "Male"],
+                      var_name="Sex", value_name="pct")
 fig = px.bar(
-    profile, x="segment", y="pct_female_disp",
-    color="wgt_avg_wage", color_continuous_scale="Blues",
-    category_orders={"segment": SEGMENTS},
-    labels={"segment": "", "pct_female_disp": "% female",
-            "wgt_avg_wage": "Avg wage"},
-    title="Female share falls as segment pay rises",
+    gender_long, x="segment", y="pct", color="Sex", barmode="group",
+    category_orders={"segment": SEGMENTS, "Sex": ["Female", "Male"]},
+    color_discrete_map={"Female": "#d7191c", "Male": "#2c7bb6"},
+    labels={"segment": "", "pct": "% of segment", "Sex": ""},
+    title="Female vs male share by wage segment",
 )
-fig.add_hline(y=50, line_dash="dash", line_color="#d7191c",
+fig.add_hline(y=50, line_dash="dash", line_color="#666",
               annotation_text="50% (parity)")
 apply_theme(fig)
 fig.show()
@@ -152,16 +156,30 @@ fig.show()
 
 ### Red versus blue states
 
-Because the gender pathway asks about political influence, we also split states by their 2024 presidential result and compare the female share of the top-pay segment in blue states against red states. Here a modest difference does appear: blue states average close to twenty-five percent female in the top-pay segment while red states sit closer to twenty-two percent. The direction fits expectations, with women somewhat better represented at the top in blue-leaning states, but the gap between the two is small and both groups remain far below parity. So politics nudges the result a little, whereas employer demand did not, and neither comes close to closing the structural shortfall the matrix and map reveal nationwide.
+Because the gender pathway asks about political influence, we also split states by their 2024 presidential result and compare the female share of the top-pay segment in blue states against red states. So that the comparison is self-explanatory, the first map below colors each state by which party carried it in 2024, giving the political geography directly rather than asking the reader to recall it. The second chart then compares the female share of the top-pay segment across those two groups. Here a modest difference does appear: blue states average close to twenty-five percent female in the top-pay segment while red states sit closer to twenty-two percent. The direction fits expectations, with women somewhat better represented at the top in blue-leaning states, but the gap between the two is small and both groups remain far below parity. So politics nudges the result a little, whereas employer demand did not, and neither comes close to closing the structural shortfall the matrix and map reveal nationwide.
 
 ```{python}
 #| code-fold: true
-#| fig-cap: "Average female share of the top-pay segment in blue versus red states (2024 presidential result). The near-equal bars indicate political leaning has little association with women reaching top-pay work."
+#| fig-cap: "Political reference map: each state colored by the party that carried it in the 2024 presidential election, so the red and blue groupings used below are explicit."
 BLUE_2024 = {"CA", "NY", "IL", "WA", "OR", "NV", "NM", "CO", "MN", "VA",
              "NJ", "CT", "RI", "MA", "VT", "NH", "ME", "MD", "DE", "HI", "DC"}
 topmap = topmap.copy()
 topmap["Lean"] = topmap["STATE_CODE"].apply(
     lambda s: "Blue states" if s in BLUE_2024 else "Red states")
+fig = px.choropleth(
+    topmap, locations="STATE_CODE", locationmode="USA-states",
+    color="Lean", scope="usa",
+    color_discrete_map={"Blue states": "#2c7bb6", "Red states": "#d7191c"},
+    labels={"Lean": ""},
+    title="State political lean (2024 presidential result)",
+)
+apply_theme(fig)
+fig.show()
+```
+
+```{python}
+#| code-fold: true
+#| fig-cap: "Average female share of the top-pay segment in blue versus red states. Blue states run about three points higher, a modest difference, but both remain far below parity."
 bylean = (topmap.groupby("Lean")["pct_female_disp"].mean().round(1).reset_index())
 fig = px.bar(
     bylean, x="Lean", y="pct_female_disp", color="Lean",
