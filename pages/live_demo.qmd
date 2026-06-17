@@ -1,0 +1,73 @@
+---
+title: "Live Demo: K-Means Clustering"
+---
+
+## Explore the worker segments
+
+This is an interactive view of the K-Means model from the Predictive Modeling page, kept on its own so you can play with it without scrolling through the full analysis. Each point is a worker placed by age and annual wage, the two features the model used, and colored by the segment K-Means assigned. The black diamonds are the cluster centroids, the center points the algorithm computed for each segment.
+
+Two ways to interact. Use the dropdown to isolate a single segment, or choose "All segments" to see them together. You can also click any entry in the legend to hide or show that segment, and you can box-zoom into any region of the chart. The points shown here are a representative sample so the page stays responsive; the full version that plots all 1.49 million workers runs in the notebook `analysis/ml_kmeans_julie.ipynb`.
+
+```{python}
+#| code-fold: true
+#| fig-cap: "Interactive K-Means demo. Use the dropdown to isolate a segment, click legend entries to toggle them, and box-zoom to inspect. Black diamonds are centroids."
+import sys, pathlib
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.io as pio
+pio.templates.default = "plotly_white"
+
+root = pathlib.Path.cwd()
+while not (root / "_quarto.yml").exists() and root != root.parent:
+    root = root.parent
+sys.path.insert(0, str(root / "analysis"))
+from utils import apply_theme, PROCESSED
+
+profile = pd.read_csv(PROCESSED / "kmeans_cluster_profile.csv")
+profile = profile.sort_values("wgt_avg_wage").reset_index(drop=True)
+SEGMENTS = ["Low-wage, early career", "Mid-wage, late career",
+            "High-wage professional", "Elite earners"]
+profile["segment"] = SEGMENTS[: len(profile)]
+cluster_to_segment = dict(zip(profile["cluster"], profile["segment"]))
+
+samp = pd.read_csv(PROCESSED / "kmeans_scatter_sample.csv")
+samp["segment"] = samp["cluster"].map(cluster_to_segment)
+COLORS = dict(zip(SEGMENTS, ["#2c7bb6", "#fdae61", "#1a9641", "#d7191c"]))
+
+fig = go.Figure()
+for seg in SEGMENTS:
+    s = samp[samp["segment"] == seg]
+    fig.add_trace(go.Scattergl(
+        x=s["AGE"], y=s["INCWAGE"], mode="markers", name=seg,
+        marker=dict(size=5, opacity=0.5, color=COLORS[seg]),
+    ))
+fig.add_trace(go.Scatter(
+    x=profile["wgt_avg_age"], y=profile["wgt_avg_wage"], mode="markers",
+    name="Centroid", hovertext=profile["segment"], hoverinfo="text",
+    marker=dict(symbol="diamond", size=15, color="black"),
+))
+
+n = len(SEGMENTS)
+def visibility(active):
+    seg_vis = [True] * n if active is None else [i == active for i in range(n)]
+    return seg_vis + [True]            # centroid trace always on
+
+buttons = [dict(label="All segments", method="update",
+                args=[{"visible": visibility(None)}])]
+for i, seg in enumerate(SEGMENTS):
+    buttons.append(dict(label=seg, method="update",
+                        args=[{"visible": visibility(i)}]))
+
+fig.update_layout(
+    updatemenus=[dict(buttons=buttons, x=0.0, xanchor="left",
+                      y=1.15, yanchor="top", showactive=True)],
+    xaxis_title="Age", yaxis_title="Annual wage (USD)",
+    title="K-Means worker segments (interactive)",
+)
+apply_theme(fig)
+fig.show()
+```
+
+## What to look for
+
+Switching between segments makes the model's logic concrete. The low-wage and mid-wage segments sit as broad bands near the bottom and are close to gender balanced, the high-wage professional band sits clearly above them, and the elite segment is a thin scatter far up the wage axis. Isolating the elite segment shows how few workers reach it and, on the full analysis page, how strongly male it skews. The centroids mark where each segment centers, which is exactly the average age and wage of its members.
