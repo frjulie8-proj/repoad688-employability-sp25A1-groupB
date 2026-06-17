@@ -119,7 +119,7 @@ top_cluster = profile.iloc[-1]["cluster"]
 
 ### The interactive map: filter by segment, career stage, and gender
 
-This map is fully filterable with three independent dropdowns. Pick a wage **segment** (or the pooled all-segments overview), a **career stage** (or all stages), and which **gender** share to color by, and the choropleth recolors instantly for any combination of the three. The numbers come from a Spark SQL query that computes the weighted counts for every state, segment, career stage, and sex; the map aggregates them live in the browser. The color scale is locked to a fixed zero to one hundred percent range, so a given shade always means the same percentage no matter which filters are active.
+This map is fully filterable with three independent dropdowns. Pick a wage **segment** (or the pooled all-segments overview), a **career stage** (or all stages), and which **gender** share to color by, and the choropleth recolors instantly for any combination of the three. The numbers come from a Spark SQL query that computes the weighted counts for every state, segment, career stage, and sex; the map aggregates them live in the browser. The color scale is a fixed diverging scale centered on fifty percent parity: red marks states where the selected sex is below half, white marks parity, and blue marks states where it is above half. Because the scale is fixed rather than rescaled per selection, the same shade always means the same distance from parity no matter which filters are active.
 
 ```{python}
 #| code-fold: true
@@ -194,7 +194,7 @@ shares = {
 Plot.plot({
   projection: "albers-usa",
   width: 820,
-  color: {scheme: "blues", domain: [0, 100], legend: true, label: `% ${sexSel}`},
+  color: {type: "diverging", scheme: "RdBu", pivot: 50, domain: [25, 75], legend: true, label: `% ${sexSel} (50% = parity)`},
   marks: [
     Plot.geo(statesFC.features, {
       fill: d => shares.get(d.id) ?? "#eeeeee",
