@@ -119,16 +119,35 @@ top_segment = profile.iloc[-1]["segment"]          # highest-wage segment
 top_cluster = profile.iloc[-1]["cluster"]
 ```
 
+<<<<<<< HEAD
 #### The interactive map: female or male share by segment and state
+=======
+### The interactive map: filter by segment, career stage, and gender
+>>>>>>> 77c3c0694cb975a9c2e65d6551e03833c8689ca4
 
-The map below is the supply side made explorable. Use the dropdown to choose any of the four segments, or the pooled all-segments overview, together with either the female or the male share, and the choropleth recolors to that selection. The numbers behind it come from a Spark SQL query that computes, for every state and segment, the weighted female and male share in one pass. Whichever female view you pick, the elite-earner segment stays in a narrow band well below parity across the whole country, which is the same nationwide shortage the other views show, now broken out so you can confirm it for any segment yourself.
+This map is fully filterable with three independent dropdowns. Pick a wage **segment** (or the pooled all-segments overview), a **career stage** (or all stages), and which **gender** share to color by, and the choropleth recolors instantly for any combination of the three. The numbers come from a Spark SQL query that computes the weighted counts for every state, segment, career stage, and sex; the map aggregates them live in the browser. The color scale is a fixed diverging scale centered on fifty percent parity: red marks states where the selected sex is below half, white marks parity, and blue marks states where it is above half. Because the scale is fixed rather than rescaled per selection, the same shade always means the same distance from parity no matter which filters are active.
 
 ```{python}
 #| code-fold: true
-#| fig-cap: "Interactive choropleth of worker share by state. The dropdown selects the wage segment and the sex. Color is fixed on a 0 to 100 percent scale so the same shade always means the same percentage across selections. The elite-earner female views stay in a narrow, well-below-parity band nationwide."
-ssx = pd.read_csv(PROCESSED / "state_segment_sex.csv")
-ssx["segment"] = ssx["cluster"].map(cluster_to_segment)
+# Prepare the state x segment x career-stage x sex data for the client-side
+# Observable dashboard, keyed by state FIPS for the choropleth.
+import json
+ABBR_FIPS = {
+    "AL": "01", "AK": "02", "AZ": "04", "AR": "05", "CA": "06", "CO": "08",
+    "CT": "09", "DE": "10", "DC": "11", "FL": "12", "GA": "13", "HI": "15",
+    "ID": "16", "IL": "17", "IN": "18", "IA": "19", "KS": "20", "KY": "21",
+    "LA": "22", "ME": "23", "MD": "24", "MA": "25", "MI": "26", "MN": "27",
+    "MS": "28", "MO": "29", "MT": "30", "NE": "31", "NV": "32", "NH": "33",
+    "NJ": "34", "NM": "35", "NY": "36", "NC": "37", "ND": "38", "OH": "39",
+    "OK": "40", "OR": "41", "PA": "42", "RI": "44", "SC": "45", "SD": "46",
+    "TN": "47", "TX": "48", "UT": "49", "VT": "50", "VA": "51", "WA": "53",
+    "WV": "54", "WI": "55", "WY": "56",
+}
+stage_df = pd.read_csv(PROCESSED / "state_segment_stage_sex.csv")
+stage_df["segment"] = stage_df["cluster"].map(cluster_to_segment)
+stage_df["fips"] = stage_df["STATE_CODE"].map(ABBR_FIPS)
 
+<<<<<<< HEAD
 ssx["fcount"] = ssx["weighted_workers"] * ssx["pct_female"] / 100
 allseg = (ssx.groupby("STATE_CODE")
           .agg(tot=("weighted_workers", "sum"), f=("fcount", "sum")).reset_index())
@@ -161,9 +180,70 @@ mapfig.update_layout(
     margin=dict(t=70, b=0, l=0, r=0),
     updatemenus=[dict(buttons=buttons, x=0.0, xanchor="left",
                       y=1.15, yanchor="top", showactive=True)],
+=======
+# Round-trip through JSON so OJS receives native types (numpy scalars are not
+# directly JSON-serializable by ojs_define).
+dash_records = json.loads(
+    stage_df[["fips", "STATE_CODE", "segment", "career_stage", "sex", "weighted"]]
+    .to_json(orient="records")
+>>>>>>> 77c3c0694cb975a9c2e65d6551e03833c8689ca4
 )
-apply_theme(mapfig)
-mapfig.show()
+ojs_define(dashdata=dash_records)
+ojs_define(segment_opts=["All segments"] + list(SEGMENTS))
+```
+
+```{ojs}
+//| echo: false
+us = fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(r => r.json())
+topojson = require("topojson-client@3")
+statesFC = topojson.feature(us, us.objects.states)
+```
+
+```{ojs}
+//| echo: false
+viewof segSel = Inputs.select(segment_opts, {label: "Segment", value: "All segments"})
+```
+
+```{ojs}
+//| echo: false
+viewof stageSel = Inputs.select(["All stages", "Early (<35)", "Mid (35-54)", "Late (55+)"], {label: "Career stage", value: "All stages"})
+```
+
+```{ojs}
+//| echo: false
+viewof sexSel = Inputs.select(["Female", "Male"], {label: "Show share of", value: "Female"})
+```
+
+```{ojs}
+//| echo: false
+shares = {
+  const rows = dashdata.filter(d =>
+    (segSel === "All segments" || d.segment === segSel) &&
+    (stageSel === "All stages" || d.career_stage === stageSel));
+  return d3.rollup(rows,
+    v => {
+      const tot = d3.sum(v, d => d.weighted);
+      const f = d3.sum(v.filter(d => d.sex === "Female"), d => d.weighted);
+      return tot ? 100 * (sexSel === "Female" ? f : (tot - f)) / tot : null;
+    },
+    d => d.fips);
+}
+```
+
+```{ojs}
+//| echo: false
+Plot.plot({
+  projection: "albers-usa",
+  width: 820,
+  color: {type: "diverging", scheme: "RdBu", pivot: 50, domain: [25, 75], legend: true, label: `% ${sexSel} (50% = parity)`},
+  marks: [
+    Plot.geo(statesFC.features, {
+      fill: d => shares.get(d.id) ?? "#eeeeee",
+      stroke: "white", strokeWidth: 0.5,
+      title: d => `${d.properties.name}: ${shares.get(d.id) == null ? "n/a" : shares.get(d.id).toFixed(1) + "%"}`
+    })
+  ]
+})
 ```
 
 #### Red versus blue states
