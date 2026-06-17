@@ -91,14 +91,19 @@ ABBR_FIPS = {
     "TN": "47", "TX": "48", "UT": "49", "VT": "50", "VA": "51", "WA": "53",
     "WV": "54", "WI": "55", "WY": "56",
 }
+import json
 stage_df = pd.read_csv(PROCESSED / "state_segment_stage_sex.csv")
 stage_df["segment"] = stage_df["cluster"].map(cluster_to_segment)
 stage_df["fips"] = stage_df["STATE_CODE"].map(ABBR_FIPS)
 
-ojs_define(dashdata=stage_df[["fips", "STATE_CODE", "segment",
-                              "career_stage", "sex", "weighted"]]
-           .to_dict(orient="records"))
-ojs_define(segment_opts=["All segments"] + SEGMENTS)
+# Round-trip through JSON so OJS receives native types (pandas/numpy
+# scalars are not directly JSON-serializable by ojs_define).
+dash_records = json.loads(
+    stage_df[["fips", "STATE_CODE", "segment", "career_stage", "sex", "weighted"]]
+    .to_json(orient="records")
+)
+ojs_define(dashdata=dash_records)
+ojs_define(segment_opts=["All segments"] + list(SEGMENTS))
 ```
 
 ```{ojs}
@@ -162,6 +167,7 @@ This view uses Plotly's animation button. Press **Play** to cycle the map throug
 ```{python}
 #| code-fold: true
 #| fig-cap: "Animated choropleth. Press Play to cycle Early, Mid, and Late career stages. Color is the female share of all workers in each state, fixed on a 0 to 100 percent scale."
+import plotly.express as px
 g = (stage_df.groupby(["STATE_CODE", "career_stage", "sex"])["weighted"]
      .sum().reset_index())
 piv = (g.pivot_table(index=["STATE_CODE", "career_stage"], columns="sex",
