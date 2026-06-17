@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Live Demo: K-Means Clustering – Job Market Analysis 2024</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-bba5ebae505b5c03f3f0d8040a416a6b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script>
+window.PlotlyConfig = {MathJaxConfig: 'local'};
+if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}
+</script>
+<script type="module">import "https://cdn.plot.ly/plotly-3.6.0.min"</script>
+
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Job Market Analysis 2024</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../pages/introduction.html"> 
+<span class="menu-text">Project Overview</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../pages/data_cleaning.html"> 
+<span class="menu-text">Data Preparation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../pages/eda.html"> 
+<span class="menu-text">Exploratory Analysis</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../pages/skill_gap_analysis.html"> 
+<span class="menu-text">Skill Gap Analysis</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../pages/ml_methods.html"> 
+<span class="menu-text">Predictive Modeling</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../pages/live_demo.html" aria-current="page"> 
+<span class="menu-text">Live Demo</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../pages/career_plan.html"> 
+<span class="menu-text">Career Strategy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#explore-the-worker-segments" id="toc-explore-the-worker-segments" class="nav-link active" data-scroll-target="#explore-the-worker-segments">Explore the worker segments</a></li>
+  <li><a href="#what-to-look-for" id="toc-what-to-look-for" class="nav-link" data-scroll-target="#what-to-look-for">What to look for</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Live Demo: K-Means Clustering</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="explore-the-worker-segments" class="level2">
+<h2 class="anchored" data-anchor-id="explore-the-worker-segments">Explore the worker segments</h2>
+<p>This is an interactive view of the K-Means model from the Predictive Modeling page, kept on its own so you can play with it without scrolling through the full analysis. Each point is a worker placed by age and annual wage, the two features the model used, and colored by the segment K-Means assigned. The black diamonds are the cluster centroids, the center points the algorithm computed for each segment.</p>
+<p>Two ways to interact. Use the dropdown to isolate a single segment, or choose “All segments” to see them together. You can also click any entry in the legend to hide or show that segment, and you can box-zoom into any region of the chart. The points shown here are a representative sample so the page stays responsive; the full version that plots all 1.49 million workers runs in the notebook <code>analysis/ml_kmeans_julie.ipynb</code>.</p>
+<div id="9e5484e1" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys, pathlib</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.graph_objects <span class="im">as</span> go</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.io <span class="im">as</span> pio</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>pio.templates.default <span class="op">=</span> <span class="st">"plotly_white"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>root <span class="op">=</span> pathlib.Path.cwd()</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="kw">not</span> (root <span class="op">/</span> <span class="st">"_quarto.yml"</span>).exists() <span class="kw">and</span> root <span class="op">!=</span> root.parent:</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    root <span class="op">=</span> root.parent</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>sys.path.insert(<span class="dv">0</span>, <span class="bu">str</span>(root <span class="op">/</span> <span class="st">"analysis"</span>))</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> utils <span class="im">import</span> apply_theme, PROCESSED</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>profile <span class="op">=</span> pd.read_csv(PROCESSED <span class="op">/</span> <span class="st">"kmeans_cluster_profile.csv"</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>profile <span class="op">=</span> profile.sort_values(<span class="st">"wgt_avg_wage"</span>).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>SEGMENTS <span class="op">=</span> [<span class="st">"Low-wage, early career"</span>, <span class="st">"Mid-wage, late career"</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>            <span class="st">"High-wage professional"</span>, <span class="st">"Elite earners"</span>]</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>profile[<span class="st">"segment"</span>] <span class="op">=</span> SEGMENTS[: <span class="bu">len</span>(profile)]</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>cluster_to_segment <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">zip</span>(profile[<span class="st">"cluster"</span>], profile[<span class="st">"segment"</span>]))</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>samp <span class="op">=</span> pd.read_csv(PROCESSED <span class="op">/</span> <span class="st">"kmeans_scatter_sample.csv"</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>samp[<span class="st">"segment"</span>] <span class="op">=</span> samp[<span class="st">"cluster"</span>].<span class="bu">map</span>(cluster_to_segment)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>COLORS <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">zip</span>(SEGMENTS, [<span class="st">"#2c7bb6"</span>, <span class="st">"#fdae61"</span>, <span class="st">"#1a9641"</span>, <span class="st">"#d7191c"</span>]))</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> go.Figure()</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> seg <span class="kw">in</span> SEGMENTS:</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> samp[samp[<span class="st">"segment"</span>] <span class="op">==</span> seg]</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    fig.add_trace(go.Scattergl(</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span>s[<span class="st">"AGE"</span>], y<span class="op">=</span>s[<span class="st">"INCWAGE"</span>], mode<span class="op">=</span><span class="st">"markers"</span>, name<span class="op">=</span>seg,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        marker<span class="op">=</span><span class="bu">dict</span>(size<span class="op">=</span><span class="dv">5</span>, opacity<span class="op">=</span><span class="fl">0.5</span>, color<span class="op">=</span>COLORS[seg]),</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>fig.add_trace(go.Scatter(</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span>profile[<span class="st">"wgt_avg_age"</span>], y<span class="op">=</span>profile[<span class="st">"wgt_avg_wage"</span>], mode<span class="op">=</span><span class="st">"markers"</span>,</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"Centroid"</span>, hovertext<span class="op">=</span>profile[<span class="st">"segment"</span>], hoverinfo<span class="op">=</span><span class="st">"text"</span>,</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    marker<span class="op">=</span><span class="bu">dict</span>(symbol<span class="op">=</span><span class="st">"diamond"</span>, size<span class="op">=</span><span class="dv">15</span>, color<span class="op">=</span><span class="st">"black"</span>),</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="bu">len</span>(SEGMENTS)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> visibility(active):</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    seg_vis <span class="op">=</span> [<span class="va">True</span>] <span class="op">*</span> n <span class="cf">if</span> active <span class="kw">is</span> <span class="va">None</span> <span class="cf">else</span> [i <span class="op">==</span> active <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n)]</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> seg_vis <span class="op">+</span> [<span class="va">True</span>]            <span class="co"># centroid trace always on</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>buttons <span class="op">=</span> [<span class="bu">dict</span>(label<span class="op">=</span><span class="st">"All segments"</span>, method<span class="op">=</span><span class="st">"update"</span>,</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>                args<span class="op">=</span>[{<span class="st">"visible"</span>: visibility(<span class="va">None</span>)}])]</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, seg <span class="kw">in</span> <span class="bu">enumerate</span>(SEGMENTS):</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    buttons.append(<span class="bu">dict</span>(label<span class="op">=</span>seg, method<span class="op">=</span><span class="st">"update"</span>,</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>                        args<span class="op">=</span>[{<span class="st">"visible"</span>: visibility(i)}]))</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>fig.update_layout(</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>    updatemenus<span class="op">=</span>[<span class="bu">dict</span>(buttons<span class="op">=</span>buttons, x<span class="op">=</span><span class="fl">0.0</span>, xanchor<span class="op">=</span><span class="st">"left"</span>,</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>                      y<span class="op">=</span><span class="fl">1.15</span>, yanchor<span class="op">=</span><span class="st">"top"</span>, showactive<span class="op">=</span><span class="va">True</span>)],</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>    xaxis_title<span class="op">=</span><span class="st">"Age"</span>, yaxis_title<span class="op">=</span><span class="st">"Annual wage (USD)"</span>,</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"K-Means worker segments (interactive)"</span>,</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>apply_theme(fig)</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div style="height:525px; width:100%;">            <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script><script>if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}</script>                <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.6.0.min.js" integrity="sha256-QaOVwtVY0T02VaHrr6pnoHLCwayMJp4O5n4YyaE3rJk=" crossorigin="anonymous"></script>                <div id="f2eb37e6-1862-442d-8c03-510bd860de7e" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("f2eb37e6-1862-442d-8c03-510bd860de7e")) {                    Plotly.newPlot(                        "f2eb37e6-1862-442d-8c03-510bd860de7e",                        [{"marker":{"color":"#2c7bb6","opacity":0.5,"size":5},"mode":"markers","name":"Low-wage, early career","x":{"dtype":"i1","bdata":"KSoqFxkYFhkRKykhExsjJiYlGyceKhIsJhcZFxwsJCgrExgiKyYpKygoFBkfGRspIiUkJxwiJyEgEiwqKhkSJiQaIxksKRgnIiIVGBkcHB8RHRcfKxopKRQXGRQWGiAXFCIWFxIUKiMZFxYVIhsVHiUVICMZGSIhIyMdHCIUHykgIiceFxUUIRMcFyMbHRkiHCInHyMdHxkSKhsoKCgTIRQQKBsqFhwYGxUoFxUZHh0dKBUaFxwbJRgnEygoJhQhGx0kIRsgLBwqIBkqGCArKCEnJiISIx0sJiEeGxcnIhkYHisZISUXEhYkHScgJRohGxkSKCAbHSwTHB4rFigeHRQXEhQhFCIYFxYiEyQVIyAeGhYiKBIrFiglHRMhJSkZGxQUJiMeEhoUJxgkKRMdGh8mFSYeGBkXJhkjHBcdGSMfIikiGiAWGyUgISgeEhwkEiggICEYLCUmJiYoJxUXJxoqLBoqGxcRFyQcKSMmKyUjJiosKycbHRgXGRsTIhgQGRshFysSGRkWExgqGxoaHyEUJB4qGCIsKCMYKBwjGyElLBsrGiUnKyMnJBsiLCUaHCcgHxshFxYWJRcjKygkKRkcIywoFyYZIiErHRkqISQjKyghHSUeLBsWGRklJCEaFiQmGCwsIB0ZFR8dJB4rGx0ZJCAmGCMYJxoZHyAjGyAYICYrKyEjGSYaKCciGB0oHCMUFyAWGigrJissJyEfGyMdJhIdIRYdGBoeJiMWHh8qIyMnHiQoGygaFCElGCUiLCQeKhchISgUEhQSJBokLB0VGx0dGh0YFx0YISIfFyUmISIoIx0iJyofGh4jIx4oHhsbIiIpHxosJxEbHhMiJiIoISUnJyscHBQUEh8lIyMdGxQfHyMmKBQZHyYfJSYZIhwsJB4SJiMjHicWGR4XGBQVFxsnIigeKBUfGCoQJRoUJhwdKBsaJigoISAUISwXJiIUKyQlIRkqHSspJxYUGysjFRwgExkpIRYhFxsiHiEpIRcYJBsgJR8WIxkXJx4gGCsjHBsjHhYlFCkgJSEdGCgrGBgbGhciKBgqFhMXGicgLCInKR0cHh0YHh0aGR4TGSIWKRYYHBoUGCwaFxkoIR4jKSolGSAcLCseJykgIiQbIxMYFyYUEysVKCsRJx4ZGiQbJxsiGh4YJxMqISwgIRcbIigkKyMqGSsgGCwUKB0VHyIYLBYUJyQgFBQbLCEkGxkbGBsrJRgqEiEcHywTIhImIysdFRoqGCEQIhYhHCIfGhslExsfFCEYHSoaICgSGxckHhIlKB0nFicjEyMlJyMeJCwoIx0YHyArKiUVISYkGSskICQoGiUsHR4eISIkJRcfISUgIhcgGicdFx8dIxQYIRsYGhQVIRoYEyIjJygfGxYaHhwgGikoHBomEyIYGBcqHR8oGB8mIhIgHicYIBUiGiQbFSAgJCMYJR8VGSIaGxUWHywjGiQcFRwZFBssJScgESYWIR8WJRslFyscGBkWJCgeHiYbIRMgIREaJygjIR0hFCAdHhoWGBIfJRYpHCUWGR4aIScgKhsdHxsqGCkrHB4bJiUhExwlFR8nFBwXHh8mGx0YHyMZJxsjHxQeKyUnGSQXKREfFSYTGSUYIyceFx8fGRsiHxsfGCoZHickEhkaECgqICgmJxcUKCQSHiAnHiofGxUrJx0kHxsYISoqGB8mKR4bJCQXKCgkJCkdESAgKB0cFCAgFSQYHxkaGxgmGRMiHSIYHx0kHCAfHSUkJysYIBwmGxwiIRwiJCArFyIdGSsqHBknHxYkGCEWHBEhGyIoEyEbGx0iJCofESgaJhcaHCwkGCInFxoZHxodKBcgIR0XIRgpFBMrKhwZJB4SFichHxsVKCEmJxosHxkXLCMTJSIUJx4QERogHyUZKiYhEhggIiAbHBspFRkhGBcpIiQoJBgqKykcHCcbFhYaFB8mFicZJx4SKR4ZFhoaHSgWFCEWEhscJBcdJRQYEhooIBMgJCQbHhklIhMmKhEiJiEqJR0ZHSoZIx4aIiMbKSkoLBIhHyAZEBMnHhkiJhgkISIZHiYpHBshIigTJSEmESMRJiAeHSsnECoYIykjIBUYHxUdGhobIxgdKR0YJCkjGxocGx4VJhEcHSoeHSQZHCoaJxcnERwmKSIWLCcXGyoiHhkrIxQsFhwSKykeJiclFBcjKRsqFBcsJBQhKx8kESMiHBAeIyshIyYQKREhJBwSHCInFhAmHRkfJBgmESYfFhwZJSgfFyAYGicjGSkaEygbIx8pHxIcJRMiHiElGRoaLCQoLCUjGRoVJCwjGycpJBUpGhMVISEdFh4fKiEaKBkoJx8UJCwlJRYcHCwYHSMnKCQaHRIgGxkXGiEaJSUmGRUrHBQnJRkoHBQeKBQiIh8bGSIRGRYbLBgbKhYnHSYkIhgsHyMfKCEcFiklJhkpJBwYFCQgHQ=="},"y":{"dtype":"i4","bdata":"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\u002fQAAgDgBABh5AAD4oQEACEwBACBOAADo\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"},"type":"scattergl"},{"marker":{"color":"#fdae61","opacity":0.5,"size":5},"mode":"markers","name":"Mid-wage, late career","x":{"dtype":"i1","bdata":"RD0wOj41MEw2QjdELi88RC9GLTM\u002fLzQ6Mjo9ODsyMy0tN0EvTC03NTtLOTYzRzlHLjEtPTE\u002fQDw2PTA4LkZFLjw0Q0EuMj0yPTM5PT1JSjE5O0k6NDs4NDI5Oj8+ND4xLjY3TTs5Mj4zPUQyPTBNOTExLy0+Ozs8Pj9DOzkuMDcxND0\u002fNjguNjM3NTg2OS8xSTw2RDIxLTcxQzxGLTBAQDkwMTg5Pz9CPTU5PTYuVEM3MDU\u002fOENJPTY4MD4\u002fODtGNEJGQD85Nzk4ST9ANDtFQz1JOC1DNS09QC8uNT81Qjw9Oy4tQ0E\u002fQD5WLjM0NFA3PTovPTZAOjs3NkJBMjMwRUExOTg2QDwuQjQwPDw9MUc3PDw+QEI4OkkxPj8vPzE+MTE6LS47MUAyMTIvLTc1M0A9OTItQzEtLj0xSTM2NTg9PzE7MEEwOi03RC49UToxNDk\u002fPjI3QEEzMjE2MTU7NkoyM0c+MTQ\u002fQURAPi81OTM1Li1IRDg\u002fOjIwMDBEO0g6LT0+QUc0PzpKPzVEMEA2NDo7QDU3NURDWUFBQzA+Qjg9QjdCPzBANTE6MUEtRzMuSjk9MTouOkY7PDIuNDRERy5FNEgyMTstNFE5Ni9FPTAyODA7NUY5MzExQjsuNTswQDwyM0MvPTM6Mjs3MU9AOzU\u002fOTw9L0BBPj41MDg\u002fNS9COC9FNEU0NTk3MTwtODIwLj8tNC08NS9LNDQzQzgzPDlCNi0xQkM6M0E5O1I\u002fLTgyRTQvRjctQjhAQTI7Ry03MUkzPjkzPkg\u002fNTU9NTE2Nj45MTBDPDhJODNCMDsyPUo4QTs7Oj0xOD85Lz87LzoxPkI8NkUyOTc3QDU1PDM+LjQuNEo7LzE0MzJBMDwvQDE7NjEzPD01OjI8SkM4PEo5P0Y9Qjg5PTozQjo6Pi00NTg9RzkwPzo5Njk5LT02ODQ7LzZFQD1LRjY9PTsxQDEzNDBPPkIzUDg0RDw5US1OPjY4SDM+QTQ8PDMwPzgtNDU5OkE4PEs3PS41OTwyM0E2Oy82P0E\u002fSEQ3MDMwMD42Njo0NDdGLj8wQEI2NTwzRDotRDQ1Mj47Lzo\u002fMzI3OzQtPTAuLTg5RS0yOz45MC05TDk\u002fNzE4MTY3NT0uREU8OjktMzFCRi81Mj0\u002fMjMzRTMzOzVDMDUwNDM3OUgxNjE5Qy8xMi03OEE1RzhFSTc1ODtBNDtCNT08MS48TDBBMDc+Oz46QT5DMUBANDs2SzstOkQ5SkkyNEE8LjM\u002fOjVWOjItPjc1NzMyMjs+OUE0MzY4N0I\u002fRS9IPT4xNi4tPEY\u002fNzVEOzNBM0E1Pj5CO0EyQC1ANTs9RkguOzRLRDRGMzs7OkJBMkdFNTM+PDlIRjhFRjBAPzwyPTU7Qj9AQ0AyRz1LQzc9Qzc0NTU9Qy8+MzpNM0kvMTxIQDc1Ri9HSjk3QjNFRi0zPTw0NS5EO0I\u002fOjlGSkM2OTozQjAyODcyLT1FPD9KMEM2ODc+PkgtQkEtQT4zLS8zMj40Ni4zOEBGNUQyRS01QTQuOzsuNjk4Njw7Njs5MjM6OEg1LzwyPj08Nzk6STovN00xLkM5NDsvNTs0LkQ\u002fQi44MTo9N0ItQC1CQjovNkM9LzZNNk49MTlFPzw9RDM1NC86ODZBQ1I3PTRIRUI7ME44OjFLQkEvQzlPSjJANzszVDQxPUNLLTUvPD0yNzMzQUlBNTk9OjhCMT46Lj02Qz8+LjgzOy09QUE5ND82QUQwQDs3MDQ9MzRJLT9IQUNANjU7NC5CODQ3Lzc1Nz9AUy87QDA+LjoyM0VGNDM5ODM+QjRGPEo6OzM5QDQyNTw2OzE5QjY0PDYtMTk5Lj42REg\u002fODQuPklHPDE6QEA8Pzw3Njo0NztDWDs\u002fLzEvOUA1NzM5SzBBQDMvR0NGPjIyQj5UMy8tNjZKOVA8Ozo5Vjo7Njc5NTE3QTI0NUA4PTw2PS1GPkJONy47QVA7MzUvOzlBPTYxLkBAMTk8P0E2MDg0"},"y":{"dtype":"i4","bdata":"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"},"type":"scattergl"},{"marker":{"color":"#1a9641","opacity":0.5,"size":5},"mode":"markers","name":"High-wage professional","x":{"dtype":"i1","bdata":"OD00MC03OR46QSorNC8yLjQvLC09NSQ2NB4sKDMtKT4wLEE3MB4kKB4qMi8wMzE0MzElOy8nRD0pIDgzJC0eKCcsJSIuJDkrLzQmLy1APiMjMScoLSlEMTIoIjUxQzM4PCw2LjUpPh88MTAtLDEyLUExKCweLDgeIzU5LTImMSopKUIjNyItMz4zJyMrJSMcHyYuPzdAKkMwKy4nIx8qMDMvLUAqMic4KDExJykdISwtNC06LiMpHy4\u002fNSsgITEpNEkuIig9JSwiLzcZMhkoNSssLCosLiYyLC47IyMoMjUfMj48MzErITEnKiRAKSYgIy42LCMvOCM5NyovLCsxPzYxIy07Jig3PCo8KC80LSYlNzkvHSU+JzwoQyMmODEoNSofGzE5OjpFLi0lPy4tKiwsKjMaMEAoOCE1LB82KTAmIy8kMjEuNyM3KDA2JiUoNh0hLjMrKzJBNDkfQDcoLyouPiMrJCU5QkIkOS45Ij0rQDUrLB8hMy4vMChDQiwwLikrODAnMCYoJCw1Ii8mKSwzPj47MC5CMTkyQDowLCQpNR4qNzovMSoxJywiLy05NSg2NTE3OzQ8Py40NSU6MjcrPEI8LDYyLDc4Ji4zMDQkISExOD09LSg8KjEwKzglLzgySC0oIywoMSgvLCkmJCY0RjcrODE3Ljo6LjkvMi8nMxgrNjUnMyErIjc2LSYtKS85LCwsKzJBNzI6PCQ2LDMqKC9FRTYkLi03KTQoMignNDw1JDUvIRkwMisyKykqIyktNS8lNi0\u002fKB81ODQ+LDU4NS44PzE="},"y":{"dtype":"i4","bdata":"KBcCAMBLAwDwSQIASOgBACC\u002fAgCAqQMAwFECAPBJAgDwSQIAQA0DADjBAQAolAIA8EkCAMDUAQBgWwMAIL8CADjBAQBYDwIA8EkCAJBfAQBYDwIAOMEBAMDUAQAAcQIAAHECAPBJAgDQ+wEAiIQCAOAiAgBYkgEAsK0BAEjiAgAgvwIA8E8BAPBJAgBYDwIAoIYBAEANAwDQ+wEAIEICAPBJAgCAtQEAOMEBAEANAwA4wQEAkNADAEANAwBoswIAaDYCABCYAgDwSQIAQA0DAKADAgDwSQIAEBUDACAwBQCIigEAEJgCAOhuAwDA1AEA0PsBAHhdAgDwSQIACMkBAFA0AwBQNAMAwNQBABhtAgAQmAIAaDYCAICvAgCghgEAwNQBAABxAgDwSQIAoIYBAPDMAQBoNgIA4JMEAGDeAgDQ+wEAmKsCAFgPAgBADQMA4JMEADBXBQCoTwMA0PsBAEjoAQBgWwMAEJgCACgLBABgWwMAYGECAPBJAgDwSQIAiIQCALCtAQDgkwQAoIYBAOCTBACQ1gIA4CICAEANAwAgvwIAyKkBAJDQAwDQ+wEAIEICAEANAwCQ0AMAAHECAGg2AgDA1AEA8EkCAND7AQBADQMAoAMCAFgPAgDobgMA0PsBAGBbAwCo0gIA0PsBALCnAgAA9AEAQA0DAIj1BABQOgIAWA8CAGBbAwDgIgIA4CICAGBbAwDo9wEAiIQCAPBJAgDwSQIAwNQBAND7AQAAcQIAIL8CAOAiAgDgkwQAQA0DAEANAwC4\u002fwEAQA0DAEANAwAwVwUAwNQBACC\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"},"type":"scattergl"},{"marker":{"color":"#d7191c","opacity":0.5,"size":5},"mode":"markers","name":"Elite earners","x":{"dtype":"i1","bdata":"KDlBJyg4MkEvOiIrPi0sIikmMjQfNScuQTwkNDAiNykpJh48KyslHTYtKTpFLTAyOz4+NjoeKS4lN0U3Pj00PTw5JDY5TDVLKw=="},"y":{"dtype":"i4","bdata":"uGQGALhkBgC4ZAYAuGQGALhkBgCYgQkA8KIIAPCiCADwoggAKPkGACj5BgCAGgYAgBoGAHBYCgCAGgYAcFgKAHBYCgBwWAoAcFgKAHBYCgAgKgYAIK0FAIAaBgBwWAoAcFgKAHBYCgAYVQYAcFgKAHBYCgBwWAoAgBoGAHBYCgBgzAUAcFgKAHBYCgBwWAoAgBoGAHBYCgBwWAoAcFgKAAguBgBwWAoAcFgKAHiqCgB4qgoAgBoGAHiqCgAAsgwAgBoGAIAaBgAAsgwAgBoGAICdBQAAUwcAKHwGAJCyCACQsggAkLIIAJCyCACQsggAkLIIAJCyCACQsggAkLIIAJCyCACQsggAkLIIAJCyCACQsggAkLIIAJCyCACQsggAUBAJAA=="},"type":"scattergl"},{"hoverinfo":"text","hovertext":["Low-wage, early career","Mid-wage, late career","High-wage professional","Elite earners"],"marker":{"color":"black","size":15,"symbol":"diamond"},"mode":"markers","name":"Centroid","x":{"dtype":"f8","bdata":"y4h9R5+rPkCgkseXgJJMQKv4p1VaS0dAEbC15uKjSEA="},"y":{"dtype":"f8","bdata":"NDngPIyw5UDTF\u002fUFu93oQF0tSHQ2MQRBNb567QxYIUE="},"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"bgcolor":"white","angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"ternary":{"bgcolor":"white","aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8","gridwidth":2},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8","gridwidth":2},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"white","subunitcolor":"#C8D4E3","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"updatemenus":[{"buttons":[{"args":[{"visible":[true,true,true,true,true]}],"label":"All segments","method":"update"},{"args":[{"visible":[true,false,false,false,true]}],"label":"Low-wage, early career","method":"update"},{"args":[{"visible":[false,true,false,false,true]}],"label":"Mid-wage, late career","method":"update"},{"args":[{"visible":[false,false,true,false,true]}],"label":"High-wage professional","method":"update"},{"args":[{"visible":[false,false,false,true,true]}],"label":"Elite earners","method":"update"}],"showactive":true,"x":0.0,"xanchor":"left","y":1.15,"yanchor":"top"}],"xaxis":{"title":{"text":"Age"}},"yaxis":{"title":{"text":"Annual wage (USD)"}},"title":{"text":"K-Means worker segments (interactive)","font":{"size":16,"color":"#2c3e50"}},"font":{"family":"Arial","size":13},"colorway":["#2c7bb6","#d7191c","#fdae61","#1a9641"]},                        {"responsive": true}                    ).then(function(){
+                            
+var gd = document.getElementById('f2eb37e6-1862-442d-8c03-510bd860de7e');
+var x = new MutationObserver(function (mutations, observer) {{
+        var display = window.getComputedStyle(gd).display;
+        if (!display || display === 'none') {{
+            console.log([gd, 'removed!']);
+            Plotly.purge(gd);
+            observer.disconnect();
+        }}
+}});
+
+// Listen for the removal of the full notebook cells
+var notebookContainer = gd.closest('#notebook-container');
+if (notebookContainer) {{
+    x.observe(notebookContainer, {childList: true});
+}}
+
+// Listen for the clearing of the current output cell
+var outputEl = gd.closest('.output');
+if (outputEl) {{
+    x.observe(outputEl, {childList: true});
+}}
+
+                        })                };            </script>        </div>
+<p>Interactive K-Means demo. Use the dropdown to isolate a segment, click legend entries to toggle them, and box-zoom to inspect. Black diamonds are centroids.</p>
+</div>
+</div>
+</section>
+<section id="what-to-look-for" class="level2">
+<h2 class="anchored" data-anchor-id="what-to-look-for">What to look for</h2>
+<p>Switching between segments makes the model’s logic concrete. The low-wage and mid-wage segments sit as broad bands near the bottom and are close to gender balanced, the high-wage professional band sits clearly above them, and the elite segment is a thin scatter far up the wage axis. Isolating the elite segment shows how few workers reach it and, on the full analysis page, how strongly male it skews. The centroids mark where each segment centers, which is exactly the average age and wage of its members.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/frjulie8-proj\.github\.io\/repoad688-employability-sum26-groupB\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
