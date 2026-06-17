@@ -20,6 +20,11 @@ data/processed/lightcast_clean.csv
 assets/figures/*.html
 data/processed/*.csv
 
+!data/processed/wage_gap_decomposition_antara.csv
+!data/processed/rf_feature_importance_antara.csv
+!data/processed/rf_model_summary_antara.csv
+!data/processed/rf_partial_dependence_age_gender_antara.csv
+
 # Python bytecode cache
 __pycache__/
 *.py[cod]

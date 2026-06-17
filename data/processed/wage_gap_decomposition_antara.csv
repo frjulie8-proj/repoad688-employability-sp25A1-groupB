@@ -1,0 +1,3 @@
+model,gender_coefficient,r_squared,explained_pct
+"Baseline (age, race, state)",24748.729366407566,0.0757272218203221,0.0
+"Full (+ occupation, industry)",22426.08789843392,0.2584723782767827,9.384891780045313
