@@ -90,4 +90,13 @@ clustered_out = su.PROCESSED / "ipums_clustered.parquet"
  .write.mode("overwrite").parquet(str(clustered_out)))
 print(f"Saved clustered person-level data -> {clustered_out}")
 
+# ── 7. Small sample for the cluster scatter ("neighbor graph") ─────
+scatter_sample = (
+    clustered.select("INCWAGE", "AGE", "cluster")
+    .sample(fraction=0.01, seed=SEED).limit(4000).toPandas()
+)
+scatter_out = su.PROCESSED / "kmeans_scatter_sample.csv"
+scatter_sample.to_csv(scatter_out, index=False)
+print(f"Saved scatter sample ({len(scatter_sample)} rows) -> {scatter_out}")
+
 spark.stop()

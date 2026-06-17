@@ -8,13 +8,18 @@ This section presents our unsupervised model for the gender pay question: a K-Me
 
 ## Methodology Note
 
-The clustering and the state-level join are computed with Spark MLlib in `analysis/ml_kmeans_julie.py` and `analysis/ml_state_join_julie.py`, both built on the shared helpers in `analysis/spark_utils.py`. Running Spark on 1.57 million worker records is too heavy to execute on every site render, so the pipeline writes its results to `data/processed/`, and this page loads those saved outputs to present the figures. All aggregates are weighted by the IPUMS person weight (PERWT) so the numbers reflect the population rather than the sample. We standardize earnings and age before clustering because K-Means is distance based, and we select the number of clusters by silhouette score.
+The clustering and the state-level join are computed with Spark MLlib in `analysis/ml_kmeans_julie.py` and `analysis/ml_state_join_julie.py`, both built on the shared helpers in `analysis/spark_utils.py`. Running Spark on 1.57 million worker records is too heavy to execute on every site render, so the pipeline writes its results to `data/processed/`, and this page loads those saved outputs to present the figures. The features given to K-Means are annual wage income and age, both standardized because K-Means is distance based, and we select the number of clusters by silhouette score. All aggregates are weighted by the IPUMS person weight (PERWT) so the numbers reflect the population rather than the sample.
 
 ```{python}
 #| code-fold: true
 import sys, pathlib
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
+
+# Consistent theme across every chart (project requirement).
+pio.templates.default = "plotly_white"
 
 # Resolve the repo root from wherever Quarto executes, then reuse the
 # shared plotly theme from analysis/utils.py (single styling source).
@@ -27,12 +32,13 @@ from utils import apply_theme, PROCESSED
 profile = pd.read_csv(PROCESSED / "kmeans_cluster_profile.csv")
 
 # Label clusters by wage rank so names stay correct even if a re-run
-# renumbers the clusters.
+# renumbers the clusters. This same mapping is reused everywhere below.
 profile = profile.sort_values("wgt_avg_wage").reset_index(drop=True)
-labels = ["Low-wage, early career", "Mid-wage, late career",
-          "High-wage professional", "Elite earners"]
-profile["segment"] = labels[: len(profile)]
+SEGMENTS = ["Low-wage, early career", "Mid-wage, late career",
+            "High-wage professional", "Elite earners"]
+profile["segment"] = SEGMENTS[: len(profile)]
 profile["pct_female_disp"] = (profile["pct_female"] * 100).round(1)
+cluster_to_segment = dict(zip(profile["cluster"], profile["segment"]))
 ```
 
 ## Step 1: Worker Segments from K-Means
@@ -50,13 +56,40 @@ show["Avg age"] = show["Avg age"].round(0).astype(int)
 show
 ```
 
+### How the clusters sit in the data
+
+This scatter shows a random sample of workers placed by age and wage, the two features K-Means actually used, and colored by the segment they were assigned to. The large black diamonds mark each segment's center. Reading it bottom to top, the algorithm separates workers into horizontal pay bands: a broad low-wage band, a mid-wage band, a high-wage professional band, and a sparse elite band far above the rest. This is the visual meaning of the clusters, namely neighborhoods of workers who earn and age similarly.
+
+```{python}
+#| code-fold: true
+#| fig-cap: "Worker sample in the age-by-wage feature space, colored by K-Means segment. Black diamonds are segment centers. The clusters form distinct horizontal pay bands."
+samp = pd.read_csv(PROCESSED / "kmeans_scatter_sample.csv")
+samp["segment"] = samp["cluster"].map(cluster_to_segment)
+
+fig = px.scatter(
+    samp, x="AGE", y="INCWAGE", color="segment",
+    category_orders={"segment": SEGMENTS}, opacity=0.45,
+    labels={"AGE": "Age", "INCWAGE": "Annual wage (USD)", "segment": "Segment"},
+    title="K-Means segments in the age-by-wage space",
+)
+fig.add_trace(go.Scatter(
+    x=profile["wgt_avg_age"], y=profile["wgt_avg_wage"],
+    mode="markers", marker=dict(symbol="diamond", size=14, color="black"),
+    name="Segment center", hovertext=profile["segment"], hoverinfo="text",
+))
+apply_theme(fig)
+fig.show()
+```
+
 The clearest pattern is that the female share falls as segment pay rises. Women make up close to half of the low-wage and mid-wage segments, around a third of the high-wage professional segment, and under a quarter of the elite-earning segment. In other words, the higher the pay of a worker segment, the more male dominated it becomes, which is exactly the structural backdrop the wage-gap regression then quantifies.
 
 ```{python}
 #| code-fold: true
+#| fig-cap: "Weighted female share of each wage segment, with a 50 percent parity reference line. Female representation declines steadily as segment pay rises."
 fig = px.bar(
     profile, x="segment", y="pct_female_disp",
     color="wgt_avg_wage", color_continuous_scale="Blues",
+    category_orders={"segment": SEGMENTS},
     labels={"segment": "", "pct_female_disp": "% female",
             "wgt_avg_wage": "Avg wage"},
     title="Female share falls as segment pay rises",
@@ -69,30 +102,81 @@ fig.show()
 
 ## Step 2: Linking Segments to Employer Demand
 
-We then ask whether this concentration of women away from high-pay segments is softened in states where employers are hiring most actively. Using the state key, we attach each state's Lightcast posting volume to its worker segments, split states into high-demand and low-demand halves at the median posting count, and compare the female share of the top-pay segment across the two halves.
+Step 2 takes the worker segments from Step 1 and asks a geographic question. For every state we attach two kinds of information, the supply side from IPUMS, meaning how its workers are spread across the four segments and how female each segment is, and the demand side from Lightcast, meaning how many job postings that state generated. The single shared key is the state, so the join happens at the state level. The three views below build the picture from a full matrix, to a map, to a direct political comparison.
 
 ```{python}
 #| code-fold: true
 sc = pd.read_csv(PROCESSED / "state_cluster_demand.csv")
-
-# Top-pay segment overall, then compare its female share across demand tiers.
-top = sc.groupby("cluster")["avg_wage"].mean().idxmax()
-state_demand = sc.drop_duplicates("STATE_CODE")[["STATE_CODE", "posting_count"]]
-med = state_demand["posting_count"].median()
-topdf = sc[sc["cluster"] == top].copy()
-topdf["Demand tier"] = topdf["posting_count"].apply(
-    lambda x: "High-demand states" if x >= med else "Low-demand states")
-tier = (topdf.groupby("Demand tier")["pct_female"].mean() * 100).round(1).reset_index()
-tier.columns = ["Demand tier", "% female in top-pay segment"]
-tier
+sc["segment"] = sc["cluster"].map(cluster_to_segment)
+sc["pct_female_disp"] = (sc["pct_female"] * 100).round(1)
+top_segment = profile.iloc[-1]["segment"]          # highest-wage segment
+top_cluster = profile.iloc[-1]["cluster"]
 ```
 
-The result is essentially flat. The female share of the top-pay segment is almost identical in high-demand and low-demand states, which tells us that the under-representation of women in the highest-paying work does not ease where the labor market is hottest. The gap looks structural rather than something a strong local demand for workers corrects on its own.
+### The matrix: female share by state and segment
+
+This heatmap is the full supply-side matrix. Each row is a state, each column is a wage segment ordered from lowest to highest pay, and the color is the female share in that state-and-segment cell. The eye-catching feature is the column pattern rather than the rows: the two left columns are pale to mid blue, meaning women are near half of the lower-paying segments almost everywhere, while the rightmost elite column is dark across nearly every state, meaning women are scarce at the top regardless of which state you live in. The gender imbalance is a property of the wage tier, not of geography.
+
+```{python}
+#| code-fold: true
+#| fig-cap: "Matrix of female share (percent) by state (rows) and wage segment (columns). The rightmost elite-earner column stays dark across nearly all states, showing the shortfall of women at the top is nationwide."
+matrix = (sc.pivot(index="STATE_CODE", columns="segment", values="pct_female_disp")
+          .reindex(columns=SEGMENTS))
+fig = px.imshow(
+    matrix, color_continuous_scale="Blues", aspect="auto",
+    labels=dict(x="Wage segment", y="State", color="% female"),
+    title="Female share (%) by state and wage segment",
+)
+fig.update_layout(height=900)
+apply_theme(fig)
+fig.show()
+```
+
+### The map: where women reach the top-pay segment
+
+The choropleth narrows the matrix to its hardest column, the female share inside the top-pay elite segment, and places it on the map. A handful of states run a little lighter or darker, but no region escapes the pattern, and the values sit in a narrow band well below parity everywhere. This is the geographic version of the same message: the shortage of women in elite-paying work is national, not concentrated in particular states.
+
+```{python}
+#| code-fold: true
+#| fig-cap: "Female share (percent) within the top-pay elite segment by state. Values stay in a narrow, well-below-parity band across the whole country."
+topmap = sc[sc["cluster"] == top_cluster]
+fig = px.choropleth(
+    topmap, locations="STATE_CODE", locationmode="USA-states",
+    color="pct_female_disp", scope="usa", color_continuous_scale="Blues",
+    labels={"pct_female_disp": "% female"},
+    title=f"Female share in the {top_segment.lower()} segment, by state",
+)
+apply_theme(fig)
+fig.show()
+```
+
+### Red versus blue states
+
+Because the gender pathway asks about political influence, we also split states by their 2024 presidential result and compare the female share of the top-pay segment in blue states against red states. Here a modest difference does appear: blue states average close to twenty-five percent female in the top-pay segment while red states sit closer to twenty-two percent. The direction fits expectations, with women somewhat better represented at the top in blue-leaning states, but the gap between the two is small and both groups remain far below parity. So politics nudges the result a little, whereas employer demand did not, and neither comes close to closing the structural shortfall the matrix and map reveal nationwide.
+
+```{python}
+#| code-fold: true
+#| fig-cap: "Average female share of the top-pay segment in blue versus red states (2024 presidential result). The near-equal bars indicate political leaning has little association with women reaching top-pay work."
+BLUE_2024 = {"CA", "NY", "IL", "WA", "OR", "NV", "NM", "CO", "MN", "VA",
+             "NJ", "CT", "RI", "MA", "VT", "NH", "ME", "MD", "DE", "HI", "DC"}
+topmap = topmap.copy()
+topmap["Lean"] = topmap["STATE_CODE"].apply(
+    lambda s: "Blue states" if s in BLUE_2024 else "Red states")
+bylean = (topmap.groupby("Lean")["pct_female_disp"].mean().round(1).reset_index())
+fig = px.bar(
+    bylean, x="Lean", y="pct_female_disp", color="Lean",
+    color_discrete_map={"Blue states": "#2c7bb6", "Red states": "#d7191c"},
+    labels={"pct_female_disp": "% female in top-pay segment", "Lean": ""},
+    title="Female share in the top-pay segment: blue vs red states",
+)
+apply_theme(fig)
+fig.show()
+```
 
 ## Implications for Job Seekers
 
-For a woman targeting the highest-paying segment of the labor market, these results suggest that simply moving to a high-demand state is unlikely to change the odds of reaching that segment, because the imbalance holds steady regardless of demand. The more useful levers are the ones the companion regression points to, namely the occupation and industry a person enters and the unexplained gap that persists even within the same kind of work. The clustering reframes the question from how much women earn on average to which earning tiers they are able to reach, and it shows that the barrier sits at the top of the wage distribution.
+For a woman targeting the highest-paying segment of the labor market, these results suggest that the odds of reaching that segment move very little with how active a state's hiring market is, and only modestly with its political leaning, where blue-leaning states show a small edge. Across every view the imbalance holds well below parity, so none of these levers comes close to closing it. The more useful levers are the ones the companion regression points to, namely the occupation and industry a person enters and the unexplained gap that persists even within the same kind of work. The clustering reframes the question from how much women earn on average to which earning tiers they are able to reach, and every view here shows the barrier sitting at the top of the wage distribution.
 
 ## Caveats
 
-The Lightcast salary is an advertised figure that signals demand, while the IPUMS wage is what workers actually earned, so the two are reported separately and never averaged together. Employer demand is measured at the state level because the two datasets do not share occupation coding, which means a state's posting volume repeats across that state's worker segments by design and supports a state-level comparison rather than a person-level one. The analysis is a single cross-sectional snapshot of roughly 2023 to 2024 rather than a trend.
+The Lightcast salary is an advertised figure that signals demand, while the IPUMS wage is what workers actually earned, so the two are reported separately and never averaged together. Employer demand is measured at the state level because the two datasets do not share occupation coding, which means a state's posting volume repeats across that state's worker segments by design and supports a state-level comparison rather than a person-level one. The red and blue grouping reflects the 2024 presidential result and is a coarse proxy for political climate. The analysis is a single cross-sectional snapshot of roughly 2023 to 2024 rather than a trend.
