@@ -34,8 +34,7 @@ profile = pd.read_csv(PROCESSED / "kmeans_cluster_profile.csv")
 # Label clusters by wage rank so names stay correct even if a re-run
 # renumbers the clusters. This same mapping is reused everywhere below.
 profile = profile.sort_values("wgt_avg_wage").reset_index(drop=True)
-SEGMENTS = ["Low-wage, early career", "Mid-wage, late career",
-            "High-wage professional", "Elite earners"]
+SEGMENTS = ["Low pay", "Mid pay", "High pay", "Elite pay"]
 profile["segment"] = SEGMENTS[: len(profile)]
 profile["pct_female_disp"] = (profile["pct_female"] * 100).round(1)
 cluster_to_segment = dict(zip(profile["cluster"], profile["segment"]))
@@ -45,7 +44,7 @@ cluster_to_segment = dict(zip(profile["cluster"], profile["segment"]))
 
 ## Worker Segmentation (K-Means)
 
-The silhouette score is highest at four clusters, which split the workforce into a large low-wage early-career group, a mid-wage late-career group, a smaller high-wage professional group, and a very small elite-earning group. The table below profiles each segment by its weighted average wage, average age, female share, and the industries its workers most commonly come from.
+The silhouette score is highest at four clusters, which split the workforce into a large low-pay group, a mid-pay group, a smaller high-pay group, and a very small elite-pay group. The table below profiles each segment by its weighted average wage, average age, female share, and the industries its workers most commonly come from.
 
 ```{python}
 #| code-fold: true
@@ -60,7 +59,7 @@ show
 
 ### How the clusters sit in the data
 
-This scatter shows a random sample of workers placed by age and wage, the two features K-Means actually used, and colored by the segment they were assigned to. The large black diamonds mark each cluster's centroid, which is the industry-standard term for the center point K-Means computes for a cluster. Reading it bottom to top, the algorithm separates workers into horizontal pay bands: a broad low-wage band, a mid-wage band, a high-wage professional band, and a sparse elite band far above the rest. This is the visual meaning of the clusters, namely neighborhoods of workers who earn and age similarly. A full-data version of this graph that plots all 1.57 million workers is available in the runnable notebook `analysis/ml_kmeans_julie.ipynb`; the website uses a representative sample so the page stays light.
+This scatter shows a random sample of workers placed by age and wage, the two features K-Means actually used, and colored by the segment they were assigned to. The large black diamonds mark each cluster's centroid, which is the industry-standard term for the center point K-Means computes for a cluster. Reading it bottom to top, the algorithm separates workers into horizontal pay bands: a broad low-pay band, a mid-pay band, a high-pay band, and a sparse elite-pay band far above the rest. This is the visual meaning of the clusters, namely neighborhoods of workers who earn and age similarly. A full-data version of this graph that plots all 1.57 million workers is available in the runnable notebook `analysis/ml_kmeans_julie.ipynb`; the website uses a representative sample so the page stays light.
 
 ```{python}
 #| code-fold: true
@@ -83,7 +82,7 @@ apply_theme(fig)
 fig.show()
 ```
 
-The clearest pattern is that the female share falls as segment pay rises. Women make up close to half of the low-wage and mid-wage segments, around a third of the high-wage professional segment, and under a quarter of the elite-earning segment. The chart below shows the female and male shares side by side within each segment. Because the IPUMS sex variable records only male or female, the male share is the exact complement of the female share, so the two series mirror each other and carry the same information. We show both because the crossover is the point: as pay rises the female bars shrink and the male bars grow, so the two genders trade places between the bottom and the top of the wage distribution. This is the structural backdrop the wage-gap regression then quantifies.
+The clearest pattern is that the female share falls as segment pay rises. Women make up close to half of the low-pay and mid-pay segments, around a third of the high-pay segment, and under a quarter of the elite-pay segment. The chart below shows the female and male shares side by side within each segment. Because the IPUMS sex variable records only male or female, the male share is the exact complement of the female share, so the two series mirror each other and carry the same information. We show both because the crossover is the point: as pay rises the female bars shrink and the male bars grow, so the two genders trade places between the bottom and the top of the wage distribution. This is the structural backdrop the wage-gap regression then quantifies.
 
 ```{python}
 #| code-fold: true
