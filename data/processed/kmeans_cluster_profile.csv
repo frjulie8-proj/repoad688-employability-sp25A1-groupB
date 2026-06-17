@@ -1,0 +1,5 @@
+cluster,n,wgt_avg_wage,wgt_avg_age,pct_female,top3_industries
+0,208907,165414.80677829208,46.58869429303862,0.3463872686820326,Administrative Services; Healthcare; Manufacturing
+1,688148,44420.38243113682,30.67039915861896,0.4942906277797987,Healthcare; Accommodation & Food; Information
+2,568231,50925.844477221035,57.14454934353603,0.5164865668789419,Healthcare; Manufacturing; Accommodation & Food
+3,22262,568326.4638270797,49.2803619753978,0.23160314010664623,Healthcare; Administrative Services; Management
