@@ -1,5 +1,11 @@
 project:
   type: website
+  # Explicit publish list: only these reach the website. The livedemo/
+  # folder is intentionally omitted so it stays in the repo, never published.
+  render:
+    - "index.qmd"
+    - "pages/*.qmd"
+    - "analysis/*.ipynb"
 
 website:
   site-url: https://frjulie8-proj.github.io/repoad688-employability-sum26-groupB/
