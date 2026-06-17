@@ -214,3 +214,116 @@ For a woman targeting the highest-paying segment of the labor market, these resu
 ## Caveats
 
 The Lightcast salary is an advertised figure that signals demand, while the IPUMS wage is what workers actually earned, so the two are reported separately and never averaged together. Employer demand is measured at the state level because the two datasets do not share occupation coding, which means a state's posting volume repeats across that state's worker segments by design and supports a state-level comparison rather than a person-level one. The red and blue grouping reflects the 2024 presidential result and is a coarse proxy for political climate. The analysis is a single cross-sectional snapshot of roughly 2023 to 2024 rather than a trend.
+
+---
+
+## Step 3: Regression Decomposition and Random Forest Feature Importance
+
+While the K-Means segmentation above shows *where* in the wage distribution the gender gap concentrates, this section asks a complementary question: *how much* of the gender wage gap can be explained by occupation and industry choice, versus how much remains unexplained after accounting for the job characteristics available in this dataset. We answer this with two models: a linear regression decomposition (the standard labor-economics approach to wage gap analysis) and a Random Forest regressor to confirm the finding holds under a more flexible, non-linear model.
+
+### Methodology Note
+
+Two linear regression models were fit on the full IPUMS `employed_only` dataset (1.49M workers with positive wages): a baseline model using `AGE`, `RACE`, and `STATE_NAME`, and a full model that adds broad `OCCUPATION` and `INDUSTRY` group codes. Comparing the coefficient on `SEX` between the two models isolates how much of the gap is explained by which jobs men and women hold, versus how much persists within the same occupation and industry. A Random Forest Regressor (100 trees, max depth 10, trained on a 200,000-row sample for computational efficiency) was then used to rank feature importance across all 167 encoded features, confirming whether gender remains a top predictor even in a model that makes no assumptions about a constant linear effect. Full code is available in `analysis/ml_wage_gap_antara.ipynb`.
+
+```{python}
+#| code-fold: true
+decomp = pd.read_csv(PROCESSED / "wage_gap_decomposition_antara.csv")
+rf_imp = pd.read_csv(PROCESSED / "rf_feature_importance_antara.csv")
+rf_summary = pd.read_csv(PROCESSED / "rf_model_summary_antara.csv")
+pdp = pd.read_csv(PROCESSED / "rf_partial_dependence_age_gender_antara.csv")
+
+raw_gap = decomp.loc[0, "gender_coefficient"]
+adj_gap = decomp.loc[1, "gender_coefficient"]
+explained_pct = decomp.loc[1, "explained_pct"]
+unexplained_pct = 100 - explained_pct
+```
+
+### How much of the gap is explained by occupation and industry?
+
+```{python}
+#| code-fold: true
+#| fig-cap: "Decomposition of the gender wage gap: the raw gap shrinks only modestly once occupation and industry are added to the model, showing that most of the gap is not explained by job segregation alone."
+explained_amt = raw_gap - adj_gap
+
+fig_waterfall = go.Figure(go.Waterfall(
+    orientation="v",
+    measure=["absolute", "relative", "total"],
+    x=["Raw gender gap", "Explained by<br>occupation/industry", "Unexplained gap"],
+    y=[raw_gap, -explained_amt, 0],
+    text=[f"${raw_gap:,.0f}", f"-${explained_amt:,.0f}", f"${adj_gap:,.0f}"],
+    textposition="outside",
+    connector={"line": {"color": "#888"}},
+    decreasing={"marker": {"color": "#1a9641"}},
+    increasing={"marker": {"color": "#d7191c"}},
+    totals={"marker": {"color": "#2c7bb6"}},
+))
+fig_waterfall.update_layout(
+    title="Gender Wage Gap Decomposition: Raw vs. Adjusted",
+    yaxis_title="Annual Wage Gap ($)",
+    showlegend=False,
+)
+apply_theme(fig_waterfall)
+fig_waterfall.show()
+```
+
+The raw gender gap, controlling only for age, race, and state, is \$`{python} f"{raw_gap:,.0f}"` annually. Adding occupation and industry to the model narrows this to \$`{python} f"{adj_gap:,.0f}"` — meaning only `{python} f"{explained_pct:.1f}"`% of the gap is explained by which jobs men and women hold. The remaining `{python} f"{unexplained_pct:.1f}"`% persists even when comparing men and women in the same broad occupation and industry, suggesting the gap is not simply a story of occupational segregation. Some of this unexplained portion likely reflects factors not captured in this dataset, such as hours worked, seniority, or negotiation differences, but the size of the unexplained share is itself a notable finding.
+
+### Does gender remain important once the model can use any feature, not just a single coefficient?
+
+```{python}
+#| code-fold: true
+#| fig-cap: "Top 15 features by Random Forest importance. Gender ranks third overall, ahead of every individual state, race category, and most occupation and industry groups."
+top15 = rf_imp.head(15).copy()
+top15["label"] = top15["feature"].replace({"SEX_LABEL_Male": "Gender (Male)"})
+
+fig_lollipop = go.Figure()
+fig_lollipop.add_trace(go.Scatter(
+    x=top15["importance"], y=top15["label"],
+    mode="markers",
+    marker=dict(
+        size=14,
+        color=top15["is_gender"].map({True: "#d7191c", False: "#2c7bb6"}),
+    ),
+))
+for _, row in top15.iterrows():
+    fig_lollipop.add_shape(
+        type="line", x0=0, x1=row["importance"], y0=row["label"], y1=row["label"],
+        line=dict(color="#d7191c" if row["is_gender"] else "#cccccc", width=2),
+    )
+fig_lollipop.update_layout(
+    title="Random Forest Feature Importance (Top 15 of 167 features)",
+    xaxis_title="Importance",
+    yaxis_title="",
+    yaxis=dict(categoryorder="total ascending"),
+)
+apply_theme(fig_lollipop)
+fig_lollipop.show()
+```
+
+Gender ranks **#3 of 167 features** in the Random Forest model — behind only age and the largest occupation group, and ahead of every individual state, race category, and most occupation and industry codes. This is a non-linear, assumption-free model confirming the same conclusion as the regression: gender is one of the strongest predictors of wage in this dataset, on par with or stronger than most job-related factors.
+
+### How does the gap evolve across a career?
+
+```{python}
+#| code-fold: true
+#| fig-cap: "Random Forest predicted wage by age and gender, holding occupation, industry, race, and state at the reference category. The gap widens through the typical career-building years before narrowing near retirement age."
+fig_pdp = px.line(
+    pdp, x="AGE", y="predicted_wage", color="SEX",
+    color_discrete_map={"Male": "#2c7bb6", "Female": "#d7191c"},
+    labels={"predicted_wage": "Predicted Annual Wage ($)", "AGE": "Age", "SEX": "Gender"},
+    title="Predicted Wage by Age and Gender (Random Forest)",
+)
+apply_theme(fig_pdp)
+fig_pdp.show()
+```
+
+Holding occupation, industry, race, and state constant, the Random Forest's predicted wage trajectory diverges between men and women starting in the mid-to-late twenties — the years typically associated with early career advancement — and the gap persists through the prime working years. This pattern is consistent with the regression and feature-importance findings above: gender continues to shape predicted earnings independent of the job characteristics in the model, and the divergence emerging during early-career years suggests the gap may compound over time rather than appearing as a fixed gap from the start.
+
+### Model Performance Note
+
+```{python}
+#| code-fold: true
+rf_summary
+```
+
+The Random Forest explains `{python} f"{rf_summary.loc[1, 'value']*100:.1f}"`% of wage variance on held-out test data (Test R² = `{python} f"{rf_summary.loc[1, 'value']:.3f}"`), trained on a 200,000-row sample for computational efficiency. As with Julie's clustering analysis, these moderate R² values are expected for individual wage prediction — wages depend on many unmeasured factors — but the *relative* importance of gender among the available features, and the *consistency* of the finding across two different modeling approaches, are the meaningful takeaways here rather than overall predictive accuracy.
