@@ -120,7 +120,7 @@ top_cluster = profile.iloc[-1]["cluster"]
 
 #### The interactive map: filter by segment, career stage, and gender
 
-This map is fully filterable with three independent dropdowns. Pick a wage **segment** (or the pooled all-segments overview), a **career stage** (or all stages), and which **gender** share to color by, and the choropleth recolors instantly for any combination of the three. The counts behind it come from a Spark SQL query over every state, segment, career stage, and sex; the map aggregates them live in the browser. The color is a fixed diverging scale centered on fifty percent parity: red marks states where the selected sex is below half, white marks parity, and blue marks states above half. Because the scale is fixed rather than rescaled per selection, the same shade always means the same distance from parity.
+This map is fully filterable with three independent dropdowns. Pick a wage **segment** (or the pooled all-segments overview), a **career stage** (or all stages), and which **gender** share to color by, and the choropleth recolors instantly for any combination of the three. The counts behind it come from a Spark SQL query over every state, segment, career stage, and sex; the map aggregates them live in the browser. Color runs light to dark blue, with the lightest states having the lowest share of the selected sex and the darkest the highest. The range adapts to whichever view is selected, stretching across the states actually present so geographic differences stay visible even when every state sits in a narrow band; read the legend for the exact percentages, since the same shade can mean different percentages in different views.
 
 ```{python}
 #| code-fold: true
@@ -195,7 +195,7 @@ shares = {
 Plot.plot({
   projection: "albers-usa",
   width: 820,
-  color: {type: "diverging", scheme: "RdBu", pivot: 50, domain: [25, 75], legend: true, label: `% ${sexSel} (50% = parity)`},
+  color: {scheme: "blues", domain: d3.extent([...shares.values()].filter(v => v != null)), legend: true, label: `% ${sexSel} (range adapts to this view)`},
   marks: [
     Plot.geo(statesFC.features, {
       fill: d => shares.get(d.id) ?? "#eeeeee",
