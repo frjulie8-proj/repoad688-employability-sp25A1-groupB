@@ -119,11 +119,8 @@ top_segment = profile.iloc[-1]["segment"]          # highest-wage segment
 top_cluster = profile.iloc[-1]["cluster"]
 ```
 
-<<<<<<< HEAD
 #### The interactive map: female or male share by segment and state
-=======
 ### The interactive map: filter by segment, career stage, and gender
->>>>>>> 77c3c0694cb975a9c2e65d6551e03833c8689ca4
 
 This map is fully filterable with three independent dropdowns. Pick a wage **segment** (or the pooled all-segments overview), a **career stage** (or all stages), and which **gender** share to color by, and the choropleth recolors instantly for any combination of the three. The numbers come from a Spark SQL query that computes the weighted counts for every state, segment, career stage, and sex; the map aggregates them live in the browser. The color scale is a fixed diverging scale centered on fifty percent parity: red marks states where the selected sex is below half, white marks parity, and blue marks states where it is above half. Because the scale is fixed rather than rescaled per selection, the same shade always means the same distance from parity no matter which filters are active.
 
@@ -147,7 +144,6 @@ stage_df = pd.read_csv(PROCESSED / "state_segment_stage_sex.csv")
 stage_df["segment"] = stage_df["cluster"].map(cluster_to_segment)
 stage_df["fips"] = stage_df["STATE_CODE"].map(ABBR_FIPS)
 
-<<<<<<< HEAD
 ssx["fcount"] = ssx["weighted_workers"] * ssx["pct_female"] / 100
 allseg = (ssx.groupby("STATE_CODE")
           .agg(tot=("weighted_workers", "sum"), f=("fcount", "sum")).reset_index())
@@ -180,13 +176,11 @@ mapfig.update_layout(
     margin=dict(t=70, b=0, l=0, r=0),
     updatemenus=[dict(buttons=buttons, x=0.0, xanchor="left",
                       y=1.15, yanchor="top", showactive=True)],
-=======
 # Round-trip through JSON so OJS receives native types (numpy scalars are not
 # directly JSON-serializable by ojs_define).
 dash_records = json.loads(
     stage_df[["fips", "STATE_CODE", "segment", "career_stage", "sex", "weighted"]]
     .to_json(orient="records")
->>>>>>> 77c3c0694cb975a9c2e65d6551e03833c8689ca4
 )
 ojs_define(dashdata=dash_records)
 ojs_define(segment_opts=["All segments"] + list(SEGMENTS))
