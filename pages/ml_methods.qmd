@@ -58,11 +58,11 @@ show
 
 ### How the clusters sit in the data
 
-This scatter shows a random sample of workers placed by age and wage, the two features K-Means actually used, and colored by the segment they were assigned to. The large black diamonds mark each segment's center. Reading it bottom to top, the algorithm separates workers into horizontal pay bands: a broad low-wage band, a mid-wage band, a high-wage professional band, and a sparse elite band far above the rest. This is the visual meaning of the clusters, namely neighborhoods of workers who earn and age similarly.
+This scatter shows a random sample of workers placed by age and wage, the two features K-Means actually used, and colored by the segment they were assigned to. The large black diamonds mark each cluster's centroid, which is the industry-standard term for the center point K-Means computes for a cluster. Reading it bottom to top, the algorithm separates workers into horizontal pay bands: a broad low-wage band, a mid-wage band, a high-wage professional band, and a sparse elite band far above the rest. This is the visual meaning of the clusters, namely neighborhoods of workers who earn and age similarly. A full-data version of this graph that plots all 1.57 million workers is available in the runnable notebook `analysis/ml_kmeans_julie.ipynb`; the website uses a representative sample so the page stays light.
 
 ```{python}
 #| code-fold: true
-#| fig-cap: "Worker sample in the age-by-wage feature space, colored by K-Means segment. Black diamonds are segment centers. The clusters form distinct horizontal pay bands."
+#| fig-cap: "Worker sample in the age-by-wage feature space, colored by K-Means segment. Black diamonds are cluster centroids. The clusters form distinct horizontal pay bands."
 samp = pd.read_csv(PROCESSED / "kmeans_scatter_sample.csv")
 samp["segment"] = samp["cluster"].map(cluster_to_segment)
 
@@ -75,7 +75,7 @@ fig = px.scatter(
 fig.add_trace(go.Scatter(
     x=profile["wgt_avg_age"], y=profile["wgt_avg_wage"],
     mode="markers", marker=dict(symbol="diamond", size=14, color="black"),
-    name="Segment center", hovertext=profile["segment"], hoverinfo="text",
+    name="Centroid", hovertext=profile["segment"], hoverinfo="text",
 ))
 apply_theme(fig)
 fig.show()
@@ -106,7 +106,7 @@ fig.show()
 
 ## Step 2: Linking Segments to Employer Demand
 
-Step 2 takes the worker segments from Step 1 and asks a geographic question. For every state we attach two kinds of information, the supply side from IPUMS, meaning how its workers are spread across the four segments and how female each segment is, and the demand side from Lightcast, meaning how many job postings that state generated. The single shared key is the state, so the join happens at the state level. The three views below build the picture from a full matrix, to a map, to a direct political comparison.
+Step 2 takes the worker segments from Step 1 and asks a geographic question. For every state we attach two kinds of information, the supply side from IPUMS, meaning how its workers are spread across the four segments and how female each segment is, and the demand side from Lightcast, meaning how many job postings that state generated. The single shared key is the state, so the join happens at the state level. The views below move from an interactive map that lets you explore any segment and either sex, to a direct political comparison.
 
 ```{python}
 #| code-fold: true
@@ -117,56 +117,58 @@ top_segment = profile.iloc[-1]["segment"]          # highest-wage segment
 top_cluster = profile.iloc[-1]["cluster"]
 ```
 
-### The matrix: female share by state and segment
+### The interactive map: female or male share by segment and state
 
-This heatmap is the full supply-side matrix. Each row is a state, each column is a wage segment ordered from lowest to highest pay, and the color shows how far that state-and-segment cell sits from a fifty-fifty split. Red marks cells that are male dominated, white marks cells near parity, and blue would mark cells that are female dominated. Coloring the distance from parity rather than the raw share lets a single matrix show both genders at once, since a deep red cell is exactly a cell where men outnumber women. The eye-catching feature is the column pattern rather than the rows: the two left columns sit near white, meaning the lower-paying segments are close to balanced almost everywhere, while the rightmost elite column turns deep red across nearly every state, meaning men dominate the top regardless of which state you live in. The gender imbalance is a property of the wage tier, not of geography.
-
-```{python}
-#| code-fold: true
-#| fig-cap: "Matrix of distance from gender parity by state (rows) and wage segment (columns). Red cells are male dominated, white cells are near a fifty-fifty split, blue cells would be female dominated. The elite-earner column is deep red across nearly all states, showing male dominance at the top is nationwide."
-matrix = (sc.assign(gap=sc["pct_female_disp"] - 50)
-          .pivot(index="STATE_CODE", columns="segment", values="gap")
-          .reindex(columns=SEGMENTS))
-fig = px.imshow(
-    matrix, color_continuous_scale="RdBu", color_continuous_midpoint=0,
-    aspect="auto",
-    labels=dict(x="Wage segment", y="State",
-                color="Female share minus 50% (pp)"),
-    title="Distance from gender parity by state and wage segment",
-)
-fig.update_layout(height=900)
-apply_theme(fig)
-fig.show()
-```
-
-### The map: where women reach the top-pay segment
-
-The choropleth narrows the matrix to its hardest column, the female share inside the top-pay elite segment, and places it on the map. A handful of states run a little lighter or darker, but no region escapes the pattern, and the values sit in a narrow band well below parity everywhere. This is the geographic version of the same message: the shortage of women in elite-paying work is national, not concentrated in particular states.
+The map below is the supply side made explorable. Use the dropdown to choose any of the four segments together with either the female or the male share, and the choropleth recolors to that selection. The numbers behind it come from a Spark SQL query that computes, for every state and segment, the weighted female and male share in one pass. Whichever female view you pick, the elite-earner segment stays in a narrow band well below parity across the whole country, which is the same nationwide shortage the other views show, now broken out so you can confirm it for any segment yourself.
 
 ```{python}
 #| code-fold: true
-#| fig-cap: "Female share (percent) within the top-pay elite segment by state. Values stay in a narrow, well-below-parity band across the whole country."
-topmap = sc[sc["cluster"] == top_cluster]
-fig = px.choropleth(
-    topmap, locations="STATE_CODE", locationmode="USA-states",
-    color="pct_female_disp", scope="usa", color_continuous_scale="Blues",
-    labels={"pct_female_disp": "% female"},
-    title=f"Female share in the {top_segment.lower()} segment, by state",
+#| fig-cap: "Interactive choropleth of worker share by state. The dropdown selects the wage segment and the sex. The elite-earner female views stay in a narrow, well-below-parity band nationwide."
+ssx = pd.read_csv(PROCESSED / "state_segment_sex.csv")
+ssx["segment"] = ssx["cluster"].map(cluster_to_segment)
+
+combos = [(seg, sex) for seg in SEGMENTS for sex in ["Female", "Male"]]
+mapfig = go.Figure()
+for seg, sex in combos:
+    sub = ssx[ssx["segment"] == seg]
+    col = "pct_female" if sex == "Female" else "pct_male"
+    mapfig.add_trace(go.Choropleth(
+        locations=sub["STATE_CODE"], locationmode="USA-states", z=sub[col],
+        colorscale="Blues", colorbar_title="%", visible=False,
+        name=f"{seg} {sex}",
+    ))
+mapfig.data[0].visible = True
+
+buttons = []
+for i, (seg, sex) in enumerate(combos):
+    vis = [False] * len(combos)
+    vis[i] = True
+    buttons.append(dict(
+        label=f"{seg} — {sex}", method="update",
+        args=[{"visible": vis},
+              {"title": f"{sex} share in the {seg.lower()} segment, by state"}],
+    ))
+
+mapfig.update_layout(
+    geo_scope="usa",
+    updatemenus=[dict(buttons=buttons, x=0.0, xanchor="left",
+                      y=1.12, yanchor="top", showactive=True)],
+    title=f"{combos[0][1]} share in the {combos[0][0].lower()} segment, by state",
 )
-apply_theme(fig)
-fig.show()
+apply_theme(mapfig)
+mapfig.show()
 ```
 
 ### Red versus blue states
 
-Because the gender pathway asks about political influence, we also split states by their 2024 presidential result and compare the female share of the top-pay segment in blue states against red states. So that the comparison is self-explanatory, the first map below colors each state by which party carried it in 2024, giving the political geography directly rather than asking the reader to recall it. The second chart then compares the female share of the top-pay segment across those two groups. Here a modest difference does appear: blue states average close to twenty-five percent female in the top-pay segment while red states sit closer to twenty-two percent. The direction fits expectations, with women somewhat better represented at the top in blue-leaning states, but the gap between the two is small and both groups remain far below parity. So politics nudges the result a little, whereas employer demand did not, and neither comes close to closing the structural shortfall the matrix and map reveal nationwide.
+Because the gender pathway asks about political influence, we also split states by their 2024 presidential result and compare the female share of the top-pay segment in blue states against red states. So that the comparison is self-explanatory, the first map below colors each state by which party carried it in 2024, giving the political geography directly rather than asking the reader to recall it. The second chart then compares the female share of the top-pay segment across those two groups. Here a modest difference does appear: blue states average close to twenty-five percent female in the top-pay segment while red states sit closer to twenty-two percent. The direction fits expectations, with women somewhat better represented at the top in blue-leaning states, but the gap between the two is small and both groups remain far below parity. So politics nudges the result a little, whereas employer demand did not, and neither comes close to closing the structural shortfall the map reveals nationwide.
 
 ```{python}
 #| code-fold: true
 #| fig-cap: "Political reference map: each state colored by the party that carried it in the 2024 presidential election, so the red and blue groupings used below are explicit."
 BLUE_2024 = {"CA", "NY", "IL", "WA", "OR", "NV", "NM", "CO", "MN", "VA",
              "NJ", "CT", "RI", "MA", "VT", "NH", "ME", "MD", "DE", "HI", "DC"}
-topmap = topmap.copy()
+topmap = sc[sc["cluster"] == top_cluster].copy()
 topmap["Lean"] = topmap["STATE_CODE"].apply(
     lambda s: "Blue states" if s in BLUE_2024 else "Red states")
 fig = px.choropleth(
