@@ -23,10 +23,45 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -70,6 +105,15 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script>
+window.PlotlyConfig = {MathJaxConfig: 'local'};
+if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}
+</script>
+<script type="module">import "https://cdn.plot.ly/plotly-3.6.0.min"</script>
+
 
 
 </head>
@@ -136,8 +180,11 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#planned-methods" id="toc-planned-methods" class="nav-link" data-scroll-target="#planned-methods">Planned Methods</a></li>
-  <li><a href="#status" id="toc-status" class="nav-link" data-scroll-target="#status">Status</a></li>
+  <li><a href="#methodology-note" id="toc-methodology-note" class="nav-link" data-scroll-target="#methodology-note">Methodology Note</a></li>
+  <li><a href="#step-1-worker-segments-from-k-means" id="toc-step-1-worker-segments-from-k-means" class="nav-link" data-scroll-target="#step-1-worker-segments-from-k-means">Step 1: Worker Segments from K-Means</a></li>
+  <li><a href="#step-2-linking-segments-to-employer-demand" id="toc-step-2-linking-segments-to-employer-demand" class="nav-link" data-scroll-target="#step-2-linking-segments-to-employer-demand">Step 2: Linking Segments to Employer Demand</a></li>
+  <li><a href="#implications-for-job-seekers" id="toc-implications-for-job-seekers" class="nav-link" data-scroll-target="#implications-for-job-seekers">Implications for Job Seekers</a></li>
+  <li><a href="#caveats" id="toc-caveats" class="nav-link" data-scroll-target="#caveats">Caveats</a></li>
   </ul>
 </nav>
     </div>
@@ -165,42 +212,214 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>This section will cover machine learning methods applied to the Lightcast job postings data, focusing on clustering and classification techniques to uncover patterns in hiring.</p>
+<p>This section presents our unsupervised model for the gender pay question: a K-Means clustering of the IPUMS workforce that groups workers into comparable labor-market segments by earnings and age. We then link those segments to employer demand from the Lightcast job postings through the one dimension the two datasets genuinely share, geography. The clustering complements the wage-gap regression in the companion analysis: the regression measures how large the gender gap is, while the clustering shows where in the wage distribution that gap concentrates.</p>
 </section>
-<section id="planned-methods" class="level2">
-<h2 class="anchored" data-anchor-id="planned-methods">Planned Methods</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 57%">
-<col style="width: 42%">
-</colgroup>
+<section id="methodology-note" class="level2">
+<h2 class="anchored" data-anchor-id="methodology-note">Methodology Note</h2>
+<p>The clustering and the state-level join are computed with Spark MLlib in <code>analysis/ml_kmeans_julie.py</code> and <code>analysis/ml_state_join_julie.py</code>, both built on the shared helpers in <code>analysis/spark_utils.py</code>. Running Spark on 1.57 million worker records is too heavy to execute on every site render, so the pipeline writes its results to <code>data/processed/</code>, and this page loads those saved outputs to present the figures. All aggregates are weighted by the IPUMS person weight (PERWT) so the numbers reflect the population rather than the sample. We standardize earnings and age before clustering because K-Means is distance based, and we select the number of clusters by silhouette score.</p>
+<div id="5c1aa066" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys, pathlib</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.express <span class="im">as</span> px</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Resolve the repo root from wherever Quarto executes, then reuse the</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># shared plotly theme from analysis/utils.py (single styling source).</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>root <span class="op">=</span> pathlib.Path.cwd()</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="kw">not</span> (root <span class="op">/</span> <span class="st">"_quarto.yml"</span>).exists() <span class="kw">and</span> root <span class="op">!=</span> root.parent:</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    root <span class="op">=</span> root.parent</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>sys.path.insert(<span class="dv">0</span>, <span class="bu">str</span>(root <span class="op">/</span> <span class="st">"analysis"</span>))</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> utils <span class="im">import</span> apply_theme, PROCESSED</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>profile <span class="op">=</span> pd.read_csv(PROCESSED <span class="op">/</span> <span class="st">"kmeans_cluster_profile.csv"</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Label clusters by wage rank so names stay correct even if a re-run</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># renumbers the clusters.</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>profile <span class="op">=</span> profile.sort_values(<span class="st">"wgt_avg_wage"</span>).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> [<span class="st">"Low-wage, early career"</span>, <span class="st">"Mid-wage, late career"</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>          <span class="st">"High-wage professional"</span>, <span class="st">"Elite earners"</span>]</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>profile[<span class="st">"segment"</span>] <span class="op">=</span> labels[: <span class="bu">len</span>(profile)]</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>profile[<span class="st">"pct_female_disp"</span>] <span class="op">=</span> (profile[<span class="st">"pct_female"</span>] <span class="op">*</span> <span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="step-1-worker-segments-from-k-means" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-worker-segments-from-k-means">Step 1: Worker Segments from K-Means</h2>
+<p>The silhouette score is highest at four clusters, which split the workforce into a large low-wage early-career group, a mid-wage late-career group, a smaller high-wage professional group, and a very small elite-earning group. The table below profiles each segment by its weighted average wage, average age, female share, and the industries its workers most commonly come from.</p>
+<div id="7c7bc9df" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>show <span class="op">=</span> profile[[<span class="st">"segment"</span>, <span class="st">"n"</span>, <span class="st">"wgt_avg_wage"</span>, <span class="st">"wgt_avg_age"</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                <span class="st">"pct_female_disp"</span>, <span class="st">"top3_industries"</span>]].copy()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>show.columns <span class="op">=</span> [<span class="st">"Segment"</span>, <span class="st">"Workers"</span>, <span class="st">"Avg wage (USD)"</span>, <span class="st">"Avg age"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                <span class="st">"</span><span class="sc">% f</span><span class="st">emale"</span>, <span class="st">"Top industries"</span>]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>show[<span class="st">"Avg wage (USD)"</span>] <span class="op">=</span> show[<span class="st">"Avg wage (USD)"</span>].<span class="bu">round</span>(<span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>show[<span class="st">"Avg age"</span>] <span class="op">=</span> show[<span class="st">"Avg age"</span>].<span class="bu">round</span>(<span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>show</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
-<th>Method</th>
-<th>Goal</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Segment</th>
+<th data-quarto-table-cell-role="th">Workers</th>
+<th data-quarto-table-cell-role="th">Avg wage (USD)</th>
+<th data-quarto-table-cell-role="th">Avg age</th>
+<th data-quarto-table-cell-role="th">% female</th>
+<th data-quarto-table-cell-role="th">Top industries</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>K-Means Clustering</td>
-<td>Group job postings by salary, industry, and education requirements</td>
+<th data-quarto-table-cell-role="th">0</th>
+<td>Low-wage, early career</td>
+<td>688148</td>
+<td>44420</td>
+<td>31</td>
+<td>49.4</td>
+<td>Healthcare; Accommodation &amp; Food; Information</td>
 </tr>
 <tr class="even">
-<td>Logistic Regression</td>
-<td>Predict employment type (full-time vs.&nbsp;part-time)</td>
+<th data-quarto-table-cell-role="th">1</th>
+<td>Mid-wage, late career</td>
+<td>568231</td>
+<td>50926</td>
+<td>57</td>
+<td>51.6</td>
+<td>Healthcare; Manufacturing; Accommodation &amp; Food</td>
 </tr>
 <tr class="odd">
-<td>Random Forest</td>
-<td>Identify top features driving salary range</td>
+<th data-quarto-table-cell-role="th">2</th>
+<td>High-wage professional</td>
+<td>208907</td>
+<td>165415</td>
+<td>47</td>
+<td>34.6</td>
+<td>Administrative Services; Healthcare; Manufactu...</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>Elite earners</td>
+<td>22262</td>
+<td>568326</td>
+<td>49</td>
+<td>23.2</td>
+<td>Healthcare; Administrative Services; Management</td>
 </tr>
 </tbody>
 </table>
+
+</div>
+</div>
+</div>
+<p>The clearest pattern is that the female share falls as segment pay rises. Women make up close to half of the low-wage and mid-wage segments, around a third of the high-wage professional segment, and under a quarter of the elite-earning segment. In other words, the higher the pay of a worker segment, the more male dominated it becomes, which is exactly the structural backdrop the wage-gap regression then quantifies.</p>
+<div id="35125041" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> px.bar(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    profile, x<span class="op">=</span><span class="st">"segment"</span>, y<span class="op">=</span><span class="st">"pct_female_disp"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"wgt_avg_wage"</span>, color_continuous_scale<span class="op">=</span><span class="st">"Blues"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>{<span class="st">"segment"</span>: <span class="st">""</span>, <span class="st">"pct_female_disp"</span>: <span class="st">"</span><span class="sc">% f</span><span class="st">emale"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>            <span class="st">"wgt_avg_wage"</span>: <span class="st">"Avg wage"</span>},</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Female share falls as segment pay rises"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>fig.add_hline(y<span class="op">=</span><span class="dv">50</span>, line_dash<span class="op">=</span><span class="st">"dash"</span>, line_color<span class="op">=</span><span class="st">"#d7191c"</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>              annotation_text<span class="op">=</span><span class="st">"50% (parity)"</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>apply_theme(fig)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div style="height:525px; width:100%;">            <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script><script>if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}</script>                <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.6.0.min.js" integrity="sha256-QaOVwtVY0T02VaHrr6pnoHLCwayMJp4O5n4YyaE3rJk=" crossorigin="anonymous"></script>                <div id="c31f1554-3602-4232-a62b-f2a9429fb06d" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("c31f1554-3602-4232-a62b-f2a9429fb06d")) {                    Plotly.newPlot(                        "c31f1554-3602-4232-a62b-f2a9429fb06d",                        [{"hovertemplate":"=%{x}\u003cbr\u003e% female=%{y}\u003cbr\u003eAvg wage=%{marker.color}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"","marker":{"color":{"dtype":"f8","bdata":"NDngPIyw5UDTF\u002fUFu93oQF0tSHQ2MQRBNb567QxYIUE="},"coloraxis":"coloraxis","pattern":{"shape":""}},"name":"","orientation":"v","showlegend":false,"textposition":"auto","x":["Low-wage, early career","Mid-wage, late career","High-wage professional","Elite earners"],"xaxis":"x","y":{"dtype":"f8","bdata":"MzMzMzOzSEDNzMzMzMxJQM3MzMzMTEFAMzMzMzMzN0A="},"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":""}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"% female"}},"coloraxis":{"colorbar":{"title":{"text":"Avg wage"}},"colorscale":[[0.0,"rgb(247,251,255)"],[0.125,"rgb(222,235,247)"],[0.25,"rgb(198,219,239)"],[0.375,"rgb(158,202,225)"],[0.5,"rgb(107,174,214)"],[0.625,"rgb(66,146,198)"],[0.75,"rgb(33,113,181)"],[0.875,"rgb(8,81,156)"],[1.0,"rgb(8,48,107)"]],"autocolorscale":false},"legend":{"tracegroupgap":0},"title":{"text":"Female share falls as segment pay rises","font":{"size":16,"color":"#2c3e50"}},"barmode":"relative","shapes":[{"line":{"color":"#d7191c","dash":"dash"},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":50,"y1":50,"yref":"y"}],"annotations":[{"showarrow":false,"text":"50% (parity)","x":1,"xanchor":"right","xref":"x domain","y":50,"yanchor":"bottom","yref":"y"}],"font":{"family":"Arial","size":13},"colorway":["#2c7bb6","#d7191c","#fdae61","#1a9641"]},                        {"responsive": true}                    ).then(function(){
+                            
+var gd = document.getElementById('c31f1554-3602-4232-a62b-f2a9429fb06d');
+var x = new MutationObserver(function (mutations, observer) {{
+        var display = window.getComputedStyle(gd).display;
+        if (!display || display === 'none') {{
+            console.log([gd, 'removed!']);
+            Plotly.purge(gd);
+            observer.disconnect();
+        }}
+}});
+
+// Listen for the removal of the full notebook cells
+var notebookContainer = gd.closest('#notebook-container');
+if (notebookContainer) {{
+    x.observe(notebookContainer, {childList: true});
+}}
+
+// Listen for the clearing of the current output cell
+var outputEl = gd.closest('.output');
+if (outputEl) {{
+    x.observe(outputEl, {childList: true});
+}}
+
+                        })                };            </script>        </div>
+</div>
+</div>
 </section>
-<section id="status" class="level2">
-<h2 class="anchored" data-anchor-id="status">Status</h2>
-<blockquote class="blockquote">
-<p>Coming in Phase 4. ETL and EDA must be finalized first.</p>
-</blockquote>
+<section id="step-2-linking-segments-to-employer-demand" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-linking-segments-to-employer-demand">Step 2: Linking Segments to Employer Demand</h2>
+<p>We then ask whether this concentration of women away from high-pay segments is softened in states where employers are hiring most actively. Using the state key, we attach each state’s Lightcast posting volume to its worker segments, split states into high-demand and low-demand halves at the median posting count, and compare the female share of the top-pay segment across the two halves.</p>
+<div id="de616d27" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>sc <span class="op">=</span> pd.read_csv(PROCESSED <span class="op">/</span> <span class="st">"state_cluster_demand.csv"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Top-pay segment overall, then compare its female share across demand tiers.</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>top <span class="op">=</span> sc.groupby(<span class="st">"cluster"</span>)[<span class="st">"avg_wage"</span>].mean().idxmax()</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>state_demand <span class="op">=</span> sc.drop_duplicates(<span class="st">"STATE_CODE"</span>)[[<span class="st">"STATE_CODE"</span>, <span class="st">"posting_count"</span>]]</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>med <span class="op">=</span> state_demand[<span class="st">"posting_count"</span>].median()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>topdf <span class="op">=</span> sc[sc[<span class="st">"cluster"</span>] <span class="op">==</span> top].copy()</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>topdf[<span class="st">"Demand tier"</span>] <span class="op">=</span> topdf[<span class="st">"posting_count"</span>].<span class="bu">apply</span>(</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> x: <span class="st">"High-demand states"</span> <span class="cf">if</span> x <span class="op">&gt;=</span> med <span class="cf">else</span> <span class="st">"Low-demand states"</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>tier <span class="op">=</span> (topdf.groupby(<span class="st">"Demand tier"</span>)[<span class="st">"pct_female"</span>].mean() <span class="op">*</span> <span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">1</span>).reset_index()</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>tier.columns <span class="op">=</span> [<span class="st">"Demand tier"</span>, <span class="st">"</span><span class="sc">% f</span><span class="st">emale in top-pay segment"</span>]</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>tier</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Demand tier</th>
+<th data-quarto-table-cell-role="th">% female in top-pay segment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>High-demand states</td>
+<td>23.5</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>Low-demand states</td>
+<td>22.5</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>The result is essentially flat. The female share of the top-pay segment is almost identical in high-demand and low-demand states, which tells us that the under-representation of women in the highest-paying work does not ease where the labor market is hottest. The gap looks structural rather than something a strong local demand for workers corrects on its own.</p>
+</section>
+<section id="implications-for-job-seekers" class="level2">
+<h2 class="anchored" data-anchor-id="implications-for-job-seekers">Implications for Job Seekers</h2>
+<p>For a woman targeting the highest-paying segment of the labor market, these results suggest that simply moving to a high-demand state is unlikely to change the odds of reaching that segment, because the imbalance holds steady regardless of demand. The more useful levers are the ones the companion regression points to, namely the occupation and industry a person enters and the unexplained gap that persists even within the same kind of work. The clustering reframes the question from how much women earn on average to which earning tiers they are able to reach, and it shows that the barrier sits at the top of the wage distribution.</p>
+</section>
+<section id="caveats" class="level2">
+<h2 class="anchored" data-anchor-id="caveats">Caveats</h2>
+<p>The Lightcast salary is an advertised figure that signals demand, while the IPUMS wage is what workers actually earned, so the two are reported separately and never averaged together. Employer demand is measured at the state level because the two datasets do not share occupation coding, which means a state’s posting volume repeats across that state’s worker segments by design and supports a state-level comparison rather than a person-level one. The analysis is a single cross-sectional snapshot of roughly 2023 to 2024 rather than a trend.</p>
 
 
 </section>
