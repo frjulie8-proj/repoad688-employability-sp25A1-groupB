@@ -123,7 +123,7 @@ The map below is the supply side made explorable. Use the dropdown to choose any
 
 ```{python}
 #| code-fold: true
-#| fig-cap: "Interactive choropleth of worker share by state. The dropdown selects the wage segment and the sex. The elite-earner female views stay in a narrow, well-below-parity band nationwide."
+#| fig-cap: "Interactive choropleth of worker share by state. The dropdown selects the wage segment and the sex. Color is fixed on a 0 to 100 percent scale so the same shade always means the same percentage across selections. The elite-earner female views stay in a narrow, well-below-parity band nationwide."
 ssx = pd.read_csv(PROCESSED / "state_segment_sex.csv")
 ssx["segment"] = ssx["cluster"].map(cluster_to_segment)
 
@@ -134,8 +134,8 @@ for seg, sex in combos:
     col = "pct_female" if sex == "Female" else "pct_male"
     mapfig.add_trace(go.Choropleth(
         locations=sub["STATE_CODE"], locationmode="USA-states", z=sub[col],
-        colorscale="Blues", colorbar_title="%", visible=False,
-        name=f"{seg} {sex}",
+        colorscale="Blues", zmin=0, zmax=100, colorbar_title="%",
+        visible=False, name=f"{seg} {sex}",
     ))
 mapfig.data[0].visible = True
 
