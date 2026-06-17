@@ -119,17 +119,20 @@ top_cluster = profile.iloc[-1]["cluster"]
 
 ### The matrix: female share by state and segment
 
-This heatmap is the full supply-side matrix. Each row is a state, each column is a wage segment ordered from lowest to highest pay, and the color is the female share in that state-and-segment cell. The eye-catching feature is the column pattern rather than the rows: the two left columns are pale to mid blue, meaning women are near half of the lower-paying segments almost everywhere, while the rightmost elite column is dark across nearly every state, meaning women are scarce at the top regardless of which state you live in. The gender imbalance is a property of the wage tier, not of geography.
+This heatmap is the full supply-side matrix. Each row is a state, each column is a wage segment ordered from lowest to highest pay, and the color shows how far that state-and-segment cell sits from a fifty-fifty split. Red marks cells that are male dominated, white marks cells near parity, and blue would mark cells that are female dominated. Coloring the distance from parity rather than the raw share lets a single matrix show both genders at once, since a deep red cell is exactly a cell where men outnumber women. The eye-catching feature is the column pattern rather than the rows: the two left columns sit near white, meaning the lower-paying segments are close to balanced almost everywhere, while the rightmost elite column turns deep red across nearly every state, meaning men dominate the top regardless of which state you live in. The gender imbalance is a property of the wage tier, not of geography.
 
 ```{python}
 #| code-fold: true
-#| fig-cap: "Matrix of female share (percent) by state (rows) and wage segment (columns). The rightmost elite-earner column stays dark across nearly all states, showing the shortfall of women at the top is nationwide."
-matrix = (sc.pivot(index="STATE_CODE", columns="segment", values="pct_female_disp")
+#| fig-cap: "Matrix of distance from gender parity by state (rows) and wage segment (columns). Red cells are male dominated, white cells are near a fifty-fifty split, blue cells would be female dominated. The elite-earner column is deep red across nearly all states, showing male dominance at the top is nationwide."
+matrix = (sc.assign(gap=sc["pct_female_disp"] - 50)
+          .pivot(index="STATE_CODE", columns="segment", values="gap")
           .reindex(columns=SEGMENTS))
 fig = px.imshow(
-    matrix, color_continuous_scale="Blues", aspect="auto",
-    labels=dict(x="Wage segment", y="State", color="% female"),
-    title="Female share (%) by state and wage segment",
+    matrix, color_continuous_scale="RdBu", color_continuous_midpoint=0,
+    aspect="auto",
+    labels=dict(x="Wage segment", y="State",
+                color="Female share minus 50% (pp)"),
+    title="Distance from gender parity by state and wage segment",
 )
 fig.update_layout(height=900)
 apply_theme(fig)
