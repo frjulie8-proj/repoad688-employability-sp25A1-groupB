@@ -149,24 +149,22 @@ for seg, sex in combos:
     ))
 mapfig.data[0].visible = True
 
-def _title(seg, sex):
-    where = "across all segments" if seg == "All segments" else f"in the {seg.lower()} segment"
-    return f"{sex} share {where}, by state"
-
 buttons = []
 for i, (seg, sex) in enumerate(combos):
     vis = [False] * len(combos)
     vis[i] = True
     buttons.append(dict(
-        label=f"{seg} — {sex}", method="update",
-        args=[{"visible": vis}, {"title": _title(seg, sex)}],
+        label=f"{seg} — {sex}", method="update", args=[{"visible": vis}],
     ))
 
+# No chart title: the dropdown label and the section heading already name the
+# view, and a title here collides with the dropdown. Extra top margin gives
+# the dropdown room.
 mapfig.update_layout(
     geo_scope="usa",
+    margin=dict(t=70, b=0, l=0, r=0),
     updatemenus=[dict(buttons=buttons, x=0.0, xanchor="left",
-                      y=1.12, yanchor="top", showactive=True)],
-    title=_title(*combos[0]),
+                      y=1.15, yanchor="top", showactive=True)],
 )
 apply_theme(mapfig)
 mapfig.show()
