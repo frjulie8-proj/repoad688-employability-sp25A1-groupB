@@ -120,7 +120,7 @@ top_cluster = profile.iloc[-1]["cluster"]
 
 #### The interactive map: filter by segment, career stage, and gender
 
-This map is fully filterable with three independent dropdowns. Pick a wage **segment** (or the pooled all-segments overview), a **career stage** (or all stages), and which **gender** share to color by, and the choropleth recolors instantly for any combination of the three. The counts behind it come from a Spark SQL query over every state, segment, career stage, and sex; the map aggregates them live in the browser. The color is a fixed diverging scale centered on fifty percent parity: red marks states where the selected sex is below half, white marks parity, and blue marks states above half. Because the scale is fixed rather than rescaled per selection, the same shade always means the same distance from parity.
+This map is fully filterable with three independent dropdowns. Pick a wage **segment** (or the pooled all-segments overview), a **career stage** (or all stages), and which **gender** share to color by, and the choropleth recolors instantly for any combination of the three. The counts behind it come from a Spark SQL query over every state, segment, career stage, and sex; the map aggregates them live in the browser. Color runs from pale yellow through orange to deep red, with the palest states having the lowest share of the selected sex and the reddest the highest. The range adapts to whichever view is selected, stretching across the states actually present so geographic differences stay visible even when every state sits in a narrow band; read the legend for the exact percentages, since the same shade can mean different percentages in different views.
 
 ```{python}
 #| code-fold: true
@@ -154,9 +154,7 @@ ojs_define(segment_opts=["All segments"] + list(SEGMENTS))
 
 ```{ojs}
 //| echo: false
-us = fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(r => r.json())
-topojson = require("topojson-client@3")
-statesFC = topojson.feature(us, us.objects.states)
+Plotly = require("plotly.js-dist-min@2.35.2")
 ```
 
 ```{ojs}
@@ -186,24 +184,33 @@ shares = {
       const f = d3.sum(v.filter(d => d.sex === "Female"), d => d.weighted);
       return tot ? 100 * (sexSel === "Female" ? f : (tot - f)) / tot : null;
     },
-    d => d.fips);
+    d => d.STATE_CODE);
 }
 ```
 
 ```{ojs}
 //| echo: false
-Plot.plot({
-  projection: "albers-usa",
-  width: 820,
-  color: {type: "diverging", scheme: "RdBu", pivot: 50, domain: [25, 75], legend: true, label: `% ${sexSel} (50% = parity)`},
-  marks: [
-    Plot.geo(statesFC.features, {
-      fill: d => shares.get(d.id) ?? "#eeeeee",
-      stroke: "white", strokeWidth: 0.5,
-      title: d => `${d.properties.name}: ${shares.get(d.id) == null ? "n/a" : shares.get(d.id).toFixed(1) + "%"}`
-    })
-  ]
-})
+mapChart = {
+  const locs = [...shares.keys()].filter(s => shares.get(s) != null);
+  const z = locs.map(s => shares.get(s));
+  const ext = d3.extent(z);            // adaptive range for this view
+  const div = html`<div style="width:100%;height:520px;"></div>`;
+  Plotly.newPlot(div, [{
+    type: "choropleth",
+    locationmode: "USA-states",
+    locations: locs,
+    z: z,
+    zmin: ext[0],
+    zmax: ext[1],
+    colorscale: [[0, "#ffffb2"], [0.5, "#fd8d3c"], [1, "#bd0026"]],
+    colorbar: {title: `% ${sexSel}`},
+    hovertemplate: "%{location}: %{z:.1f}%<extra></extra>"
+  }], {
+    geo: {scope: "usa"},
+    margin: {t: 10, b: 0, l: 0, r: 0}
+  }, {responsive: true, displaylogo: false});
+  return div;
+}
 ```
 
 #### Red versus blue states
