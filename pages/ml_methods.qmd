@@ -342,7 +342,28 @@ top15 = rf_imp.head(15).copy()
 top15['label'] = top15['feature'].apply(clean_feature_label)
 
 fig_lollipop = go.Figure()
-fig_lollipop.add_t```
+fig_lollipop.add_trace(go.Scatter(
+    x=top15['importance'], y=top15['label'],
+    mode='markers',
+    marker=dict(
+        size=14,
+        color=top15['is_gender'].map({True: '#d7191c', False: '#2c7bb6'}),
+    ),
+))
+for _, row in top15.iterrows():
+    fig_lollipop.add_shape(
+        type='line', x0=0, x1=row['importance'], y0=row['label'], y1=row['label'],
+        line=dict(color='#d7191c' if row['is_gender'] else '#cccccc', width=2),
+    )
+fig_lollipop.update_layout(
+    title='Random Forest Feature Importance (Top 15 of 167 features)',
+    xaxis_title='Importance',
+    yaxis_title='',
+    yaxis=dict(categoryorder='total ascending'),
+)
+apply_theme(fig_lollipop)
+fig_lollipop.show()
+```
 
 Gender ranks **#3 of 167 features** in the Random Forest model — behind only age and the largest occupation group, and ahead of every individual state, race category, and most occupation and industry codes. This is a non-linear, assumption-free model confirming the same conclusion as the regression: gender is one of the strongest predictors of wage in this dataset, on par with or stronger than most job-related factors.
 
