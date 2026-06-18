@@ -284,6 +284,24 @@ clf_metrics
 
 The classifier reaches a **ROC AUC of 0.80** with about **72% accuracy** on held-out workers, well above the 0.50 AUC of random guessing. In plain terms, a worker's economic profile carries a strong gender signal: knowing someone's wage, occupation, and industry lets the model identify their sex correctly roughly seven times in ten. That separability is the same structural sorting the clustering and the regression describe, now seen from a third angle and measured with classification metrics.
 
+The ROC curve below plots the trade-off between the true-positive and false-positive rates as the classification threshold varies. The curve bows well above the diagonal (random guessing), and the area under it — the ROC AUC — is 0.80.
+
+```{python}
+#| code-fold: true
+#| fig-cap: "ROC curve for the gender logistic-regression classifier on the held-out test set. The dashed diagonal is random guessing (AUC 0.50); the area under the solid curve is the model's AUC of 0.80."
+roc = pd.read_csv(PROCESSED / "gender_clf_roc.csv")
+auc = float(pd.read_csv(PROCESSED / "gender_clf_metrics.csv")
+            .query("metric == 'ROC_AUC'")["value"].iloc[0])
+fig_roc = px.line(roc, x="fpr", y="tpr",
+                  labels={"fpr": "False positive rate", "tpr": "True positive rate"},
+                  title=f"ROC Curve — Gender Classifier (AUC = {auc:.2f})")
+fig_roc.add_shape(type="line", x0=0, y0=0, x1=1, y1=1,
+                  line=dict(dash="dash", color="#999"))
+fig_roc.update_layout(xaxis_range=[0, 1], yaxis_range=[0, 1])
+apply_theme(fig_roc)
+fig_roc.show()
+```
+
 ```{python}
 #| code-fold: true
 #| fig-cap: "Confusion matrix on the held-out test set (label 0 = Male, 1 = Female)."
