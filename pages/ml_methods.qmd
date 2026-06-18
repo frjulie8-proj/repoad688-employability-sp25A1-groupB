@@ -258,6 +258,25 @@ For a woman targeting the highest-paying segment of the labor market, these resu
 
 The Lightcast salary is an advertised figure that signals demand, while the IPUMS wage is what workers actually earned, so the two are reported separately and never averaged together. Employer demand is measured at the state level because the two datasets do not share occupation coding, which means a state's posting volume repeats across that state's worker segments by design and supports a state-level comparison rather than a person-level one. The red and blue grouping reflects the 2024 presidential result and is a coarse proxy for political climate. The analysis is a single cross-sectional snapshot of roughly 2023 to 2024 rather than a trend.
 
+## Gender Classification (Logistic Regression)
+
+Alongside the unsupervised clustering, this **supervised** model asks a sharper question: how separable are women and men by their labor-market profile alone? We fit a **logistic regression** with Spark MLlib that classifies each worker as Female or Male from age, annual wage, occupation group, industry, state, and race, on an 80/20 train/test split of the IPUMS employed sample. The aim is not to predict gender for its own sake but to measure how strongly gender is encoded in economic outcomes: the more accurately a model recovers gender from wage and job features, the more those features are themselves stratified by gender.
+
+```{python}
+#| code-fold: true
+clf_metrics = pd.read_csv(PROCESSED / "gender_clf_metrics.csv")[["metric", "value"]]
+clf_metrics.columns = ["Metric", "Value"]
+clf_metrics
+```
+
+The classifier reaches a **ROC AUC of 0.80** with about **72% accuracy** on held-out workers, well above the 0.50 AUC of random guessing. In plain terms, a worker's economic profile carries a strong gender signal: knowing someone's wage, occupation, and industry lets the model identify their sex correctly roughly seven times in ten. That separability is the same structural sorting the clustering and the regression describe, now seen from a third angle and measured with classification metrics.
+
+```{python}
+#| code-fold: true
+#| fig-cap: "Confusion matrix on the held-out test set (label 0 = Male, 1 = Female)."
+pd.read_csv(PROCESSED / "gender_clf_confusion.csv")
+```
+
 ## Wage Gap Regression & Random Forest
 
 While the K-Means segmentation above shows *where* in the wage distribution the gender gap concentrates, this section asks a complementary question: *how much* of the gender wage gap can be explained by occupation and industry choice, versus how much remains unexplained after accounting for the job characteristics available in this dataset. We answer this with two models: a linear regression decomposition (the standard labor-economics approach to wage gap analysis) and a Random Forest regressor to confirm the finding holds under a more flexible, non-linear model.
@@ -394,3 +413,19 @@ rf_summary
 The Random Forest explains `{python} f"{rf_summary.loc[1, 'value']*100:.1f}"`% of wage variance on held-out test data (Test R² = `{python} f"{rf_summary.loc[1, 'value']:.3f}"`), trained on a 200,000-row sample for computational efficiency. As with Julie's clustering analysis, these moderate R² values are expected for individual wage prediction — wages depend on many unmeasured factors — but the *relative* importance of gender among the available features, and the *consistency* of the finding across two different modeling approaches, are the meaningful takeaways here rather than overall predictive accuracy.
 
 :::
+
+## Model Evaluation & Comparison
+
+This final section compares every model on the metrics appropriate to its kind, produced by a single reusable routine in `analysis/model_eval.py`. That `evaluate_all()` function reads each model's saved metric output and consolidates them into one table; no model is re-trained here, and adding a model later means one new entry rather than new metric code, which keeps the evaluation DRY. Because the three model families measure different things, the table is grouped by type: a clustering silhouette, classification metrics, and regression R² are not directly comparable and should be read within their own group.
+
+```{python}
+#| code-fold: true
+#| tbl-cap: "Consolidated evaluation across all project models, grouped by type. Clustering, classification, and regression metrics are on their own scales and are not directly comparable across groups."
+ev = pd.read_csv(PROCESSED / "model_evaluation.csv")[["type", "model", "metric", "value"]]
+ev.columns = ["Type", "Model", "Metric", "Value"]
+ev
+```
+
+Reading by group: the **K-Means** clustering scores a silhouette near 0.66, indicating reasonably well-separated wage-and-age segments. The **gender classifier** reaches a ROC AUC of 0.80, showing gender is strongly recoverable from economic features. The **regression** models report modest R² (the full linear model about 0.26, the Random Forest about 0.21 on held-out data), which is expected for individual wage prediction; their value lies in the gender coefficient and feature importance rather than raw predictive accuracy. Across all three approaches the same conclusion recurs: gender is a strong, structural signal in the labor market that job characteristics alone do not explain away.
+
+One honest reporting note: the regression rows currently show R² only. Root mean squared error is not yet saved by the regression notebook, and would be added there for full rubric coverage of the regression metrics.

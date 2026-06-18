@@ -45,6 +45,16 @@ for k in K_RANGE:
 best_k = max(sweep, key=sweep.get)
 print(f"\nChosen k = {best_k} (highest silhouette = {sweep[best_k]:.3f})")
 
+# Standardized metrics row for the DRY model-evaluation section.
+import pandas as _pd
+_pd.DataFrame([
+    {"model": "K-Means clustering", "type": "clustering",
+     "metric": "Silhouette", "value": round(sweep[best_k], 4)},
+    {"model": "K-Means clustering", "type": "clustering",
+     "metric": "k", "value": float(best_k)},
+]).to_csv(su.PROCESSED / "kmeans_metrics.csv", index=False)
+print(f"Saved kmeans metrics -> {su.PROCESSED / 'kmeans_metrics.csv'}")
+
 # ── 3. Fit final model on full data ────────────────────────────────
 final = KMeans(featuresCol="features", k=best_k, seed=SEED).fit(data)
 clustered = final.transform(data).withColumnRenamed("prediction", "cluster").cache()

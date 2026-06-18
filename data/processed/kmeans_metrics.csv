@@ -1,0 +1,3 @@
+model,type,metric,value
+K-Means clustering,clustering,Silhouette,0.6617
+K-Means clustering,clustering,k,4.0
