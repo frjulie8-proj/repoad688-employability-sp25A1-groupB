@@ -403,7 +403,7 @@
     "href": "analysis/live_demo_antara.html",
     "title": "Live Demo: Gender Wage Gap — ML Analysis",
     "section": "",
-    "text": "Course: AD688 Applied Business Analytics | Group B\nDataset: IPUMS USA 2024 ACS + Lightcast Job Postings\nResearch Question: How much of the gender wage gap is explained by occupation and industry choice?\nThis notebook demonstrates: 1. Linear Regression Decomposition 2. Random Forest Feature Importance"
+    "text": "Course: AD688 Applied Business Analytics Dataset: IPUMS USA 2024 ACS + Lightcast Job Postings\nResearch Question: How much of the gender wage gap is explained by occupation and industry choice?\nThis notebook demonstrates: 1. Linear Regression Decomposition 2. Random Forest Feature Importance"
   },
   {
     "objectID": "analysis/live_demo_antara.html#setup",
