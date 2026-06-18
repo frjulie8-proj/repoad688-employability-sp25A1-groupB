@@ -262,6 +262,19 @@ The Lightcast salary is an advertised figure that signals demand, while the IPUM
 
 Alongside the unsupervised clustering, this **supervised** model asks a sharper question: how separable are women and men by their labor-market profile alone? We fit a **logistic regression** with Spark MLlib that classifies each worker as Female or Male from age, annual wage, occupation group, industry, state, and race, on an 80/20 train/test split of the IPUMS employed sample. The aim is not to predict gender for its own sake but to measure how strongly gender is encoded in economic outcomes: the more accurately a model recovers gender from wage and job features, the more those features are themselves stratified by gender.
 
+**Features used (X) → target (y = SEX, Female vs Male):**
+
+| Feature | Type | Description |
+|---|---|---|
+| `AGE` | numeric | Worker's age |
+| `INCWAGE` | numeric | Annual wage income |
+| Occupation group | categorical | `OCC` bucketed into broad groups (`OCC // 100`) |
+| Industry | categorical | 20-sector grouping of IPUMS `IND` |
+| State | categorical | `STATEFIP` |
+| Race | categorical | `RACE` |
+
+The two numeric features are used directly and the four categorical features are one-hot encoded, giving roughly 180 model columns. Note that annual wage is intentionally among the predictors: because the project is about the wage gap, a high AUC here partly reflects that wage itself is gender-stratified, alongside occupation and industry sorting.
+
 ```{python}
 #| code-fold: true
 clf_metrics = pd.read_csv(PROCESSED / "gender_clf_metrics.csv")[["metric", "value"]]
