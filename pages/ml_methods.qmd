@@ -314,32 +314,35 @@ The raw gender gap, controlling only for age, race, and state, is \$`{python} f"
 ```{python}
 #| code-fold: true
 #| fig-cap: "Top 15 features by Random Forest importance. Gender ranks third overall, ahead of every individual state, race category, and most occupation and industry groups."
+
+# OCC group labels derived from IPUMS USA 2018 Census occupation coding scheme
+# Source: https://usa.ipums.org/usa/volii/occ2018.shtml
+# Applied to actual data in analysis/ml_wage_gap_antara.ipynb
+occ_labels = pd.read_csv(PROCESSED / "occ_group_labels.csv")
+occ_lookup = dict(zip(occ_labels['OCC_GROUP'], occ_labels['MAJOR_GROUP']))
+
+def clean_feature_label(f):
+    if f == 'AGE':
+        return 'Age'
+    elif f == 'SEX_LABEL_Male':
+        return 'Gender (Male)'
+    elif f.startswith('OCC_GROUP_'):
+        grp = int(f.replace('OCC_GROUP_', ''))
+        return f"Occupation: {occ_lookup.get(grp, f)}"
+    elif f.startswith('IND_GROUP_'):
+        return f"Industry Group {f.replace('IND_GROUP_', '')}"
+    elif f.startswith('STATE_NAME_'):
+        return f"State: {f.replace('STATE_NAME_', '')}"
+    elif f.startswith('RACE_LABEL_'):
+        return f"Race: {f.replace('RACE_LABEL_', '')}"
+    else:
+        return f
+
 top15 = rf_imp.head(15).copy()
-top15["label"] = top15["feature"].replace({"SEX_LABEL_Male": "Gender (Male)"})
+top15['label'] = top15['feature'].apply(clean_feature_label)
 
 fig_lollipop = go.Figure()
-fig_lollipop.add_trace(go.Scatter(
-    x=top15["importance"], y=top15["label"],
-    mode="markers",
-    marker=dict(
-        size=14,
-        color=top15["is_gender"].map({True: "#d7191c", False: "#2c7bb6"}),
-    ),
-))
-for _, row in top15.iterrows():
-    fig_lollipop.add_shape(
-        type="line", x0=0, x1=row["importance"], y0=row["label"], y1=row["label"],
-        line=dict(color="#d7191c" if row["is_gender"] else "#cccccc", width=2),
-    )
-fig_lollipop.update_layout(
-    title="Random Forest Feature Importance (Top 15 of 167 features)",
-    xaxis_title="Importance",
-    yaxis_title="",
-    yaxis=dict(categoryorder="total ascending"),
-)
-apply_theme(fig_lollipop)
-fig_lollipop.show()
-```
+fig_lollipop.add_t```
 
 Gender ranks **#3 of 167 features** in the Random Forest model — behind only age and the largest occupation group, and ahead of every individual state, race category, and most occupation and industry codes. This is a non-linear, assumption-free model confirming the same conclusion as the regression: gender is one of the strongest predictors of wage in this dataset, on par with or stronger than most job-related factors.
 
