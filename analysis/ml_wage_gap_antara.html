@@ -300,151 +300,36 @@ The difference between Step 1 and Step 2 coefficients = portion explained by occ
 <p>Uses a 200,000-row sample (from 1.49M) for computational efficiency on a 2-core EC2 instance.<br>
 100 trees, max depth 10. Trains a non-linear model to confirm gender’s importance<br>
 as a wage predictor without any assumption about a fixed linear effect.</p>
-<div id="b3ede6f5" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample 200k rows for computational efficiency</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>rf_df <span class="op">=</span> df[[<span class="st">'AGE'</span>, <span class="st">'RACE_LABEL'</span>, <span class="st">'STATE_NAME'</span>, <span class="st">'SEX_LABEL'</span>, <span class="st">'OCC'</span>, <span class="st">'IND'</span>, <span class="st">'INCWAGE'</span>]].sample(</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    n<span class="op">=</span><span class="dv">200000</span>, random_state<span class="op">=</span><span class="dv">42</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>).copy()</span>
+<div id="9a56b077" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ── Random Forest results computed by PySpark MLlib ──────────────</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Full pipeline in analysis/ml_rf_antara.py</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run: python3 analysis/ml_rf_antara.py</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Results saved to data/processed/ and loaded below</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>rf_df[<span class="st">'OCC_GROUP'</span>] <span class="op">=</span> (rf_df[<span class="st">'OCC'</span>] <span class="op">//</span> <span class="dv">100</span>) <span class="op">*</span> <span class="dv">100</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>rf_df[<span class="st">'IND_GROUP'</span>] <span class="op">=</span> (rf_df[<span class="st">'IND'</span>] <span class="op">//</span> <span class="dv">1000</span>) <span class="op">*</span> <span class="dv">1000</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>rf_encoded <span class="op">=</span> pd.get_dummies(</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    rf_df.drop(columns<span class="op">=</span>[<span class="st">'OCC'</span>, <span class="st">'IND'</span>]),</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    columns<span class="op">=</span>[<span class="st">'RACE_LABEL'</span>, <span class="st">'STATE_NAME'</span>, <span class="st">'SEX_LABEL'</span>, <span class="st">'OCC_GROUP'</span>, <span class="st">'IND_GROUP'</span>],</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    drop_first<span class="op">=</span><span class="va">True</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>PROCESSED <span class="op">=</span> Path(<span class="st">"../data/processed"</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>rf_summary <span class="op">=</span> pd.read_csv(PROCESSED <span class="op">/</span> <span class="st">"rf_model_summary_antara.csv"</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>rf_imp <span class="op">=</span> pd.read_csv(PROCESSED <span class="op">/</span> <span class="st">"rf_feature_importance_antara.csv"</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>pdp <span class="op">=</span> pd.read_csv(PROCESSED <span class="op">/</span> <span class="st">"rf_partial_dependence_age_gender_antara.csv"</span>)</span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rf_encoded.drop(columns<span class="op">=</span>[<span class="st">'INCWAGE'</span>])</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> rf_encoded[<span class="st">'INCWAGE'</span>]</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.2</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>rf_model <span class="op">=</span> RandomForestRegressor(n_estimators<span class="op">=</span><span class="dv">100</span>, max_depth<span class="op">=</span><span class="dv">10</span>, random_state<span class="op">=</span><span class="dv">42</span>, n_jobs<span class="op">=-</span><span class="dv">1</span>)</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>rf_model.fit(X_train, y_train)</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>train_score <span class="op">=</span> rf_model.score(X_train, y_train)</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>test_score <span class="op">=</span> rf_model.score(X_test, y_test)</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Random Forest Train R²: </span><span class="sc">{</span>train_score<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Random Forest Test R²:  </span><span class="sc">{</span>test_score<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Sample size: </span><span class="sc">{</span><span class="bu">len</span>(X)<span class="sc">:,}</span><span class="ss"> workers"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"PySpark Random Forest Results:"</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(rf_summary.to_string(index<span class="op">=</span><span class="va">False</span>))</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Top 5 features:"</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(rf_imp.head(<span class="dv">5</span>).to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="step-5-feature-importance-and-partial-dependence" class="level2">
 <h2 class="anchored" data-anchor-id="step-5-feature-importance-and-partial-dependence">Step 5: Feature Importance and Partial Dependence</h2>
 <p>Feature importance shows which features were most useful for predicting wage across all 100 trees.<br>
 Partial dependence shows predicted wage by age, split by gender, holding all other features at baseline.</p>
-<div id="418e5d4e" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Feature importance</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>importances <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'feature'</span>: X.columns,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'importance'</span>: rf_model.feature_importances_</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>}).sort_values(<span class="st">'importance'</span>, ascending<span class="op">=</span><span class="va">False</span>).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>importances[<span class="st">'is_gender'</span>] <span class="op">=</span> importances[<span class="st">'feature'</span>].<span class="bu">str</span>.contains(<span class="st">'SEX_LABEL'</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>sex_rank <span class="op">=</span> importances[importances[<span class="st">'feature'</span>].<span class="bu">str</span>.contains(<span class="st">'SEX_LABEL'</span>)].index[<span class="dv">0</span>] <span class="op">+</span> <span class="dv">1</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Top 15 Most Important Features (out of </span><span class="sc">{</span><span class="bu">len</span>(importances)<span class="sc">}</span><span class="ss">):"</span>)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(importances.head(<span class="dv">15</span>)[[<span class="st">'feature'</span>, <span class="st">'importance'</span>, <span class="st">'is_gender'</span>]].to_string(index<span class="op">=</span><span class="va">True</span>))</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Gender (SEX_LABEL_Male) rank: #</span><span class="sc">{</span>sex_rank<span class="sc">}</span><span class="ss"> of </span><span class="sc">{</span><span class="bu">len</span>(importances)<span class="sc">}</span><span class="ss"> features"</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Partial dependence by age and gender</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>age_range <span class="op">=</span> np.arange(<span class="dv">20</span>, <span class="dv">66</span>, <span class="dv">2</span>)</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>pdp_rows <span class="op">=</span> []</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> sex <span class="kw">in</span> [<span class="st">'Male'</span>, <span class="st">'Female'</span>]:</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> age <span class="kw">in</span> age_range:</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        row <span class="op">=</span> {col: <span class="dv">0</span> <span class="cf">for</span> col <span class="kw">in</span> X.columns}</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        row[<span class="st">'AGE'</span>] <span class="op">=</span> age</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> sex <span class="op">==</span> <span class="st">'Male'</span>:</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>            row[<span class="st">'SEX_LABEL_Male'</span>] <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>        pdp_rows.append({<span class="st">'AGE'</span>: age, <span class="st">'SEX'</span>: sex, <span class="op">**</span>row})</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>pdp_df <span class="op">=</span> pd.DataFrame(pdp_rows)</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>pdp_df[<span class="st">'predicted_wage'</span>] <span class="op">=</span> rf_model.predict(pdp_df[X.columns])</span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>pdp_summary <span class="op">=</span> pdp_df[[<span class="st">'AGE'</span>, <span class="st">'SEX'</span>, <span class="st">'predicted_wage'</span>]]</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Partial dependence sample (first 6 rows):"</span>)</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(pdp_summary.head(<span class="dv">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
 </section>
 <section id="step-6-save-precomputed-results" class="level2">
 <h2 class="anchored" data-anchor-id="step-6-save-precomputed-results">Step 6: Save Precomputed Results</h2>
 <p>Saves all results as small CSVs to <code>data/processed/</code> so <code>pages/ml_methods.qmd</code><br>
 can load them without retraining models on every site render.</p>
-<div id="fb9becf8" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>output_dir <span class="op">=</span> <span class="st">'../data/processed/'</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Decomposition summary</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>decomposition_df <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">'model'</span>: [<span class="st">'Baseline (age, race, state)'</span>, <span class="st">'Full (+ occupation, industry)'</span>],</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">'gender_coefficient'</span>: [baseline_gender_coef, full_gender_coef],</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">'r_squared'</span>: [</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        model_baseline.score(X_baseline, y_baseline),</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        model_full.score(X_full, y_full)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    ],</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">'explained_pct'</span>: [<span class="dv">0</span>, explained_pct]</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>decomposition_df.to_csv(<span class="ss">f'</span><span class="sc">{</span>output_dir<span class="sc">}</span><span class="ss">wage_gap_decomposition_antara.csv'</span>, index<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Saved wage_gap_decomposition_antara.csv"</span>)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. RF feature importance (top 20)</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>importances.head(<span class="dv">20</span>).to_csv(<span class="ss">f'</span><span class="sc">{</span>output_dir<span class="sc">}</span><span class="ss">rf_feature_importance_antara.csv'</span>, index<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Saved rf_feature_importance_antara.csv"</span>)</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. RF model summary</span></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>pd.DataFrame({</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">'metric'</span>: [<span class="st">'Train R²'</span>, <span class="st">'Test R²'</span>, <span class="st">'Sample Size'</span>],</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">'value'</span>: [train_score, test_score, <span class="bu">len</span>(X)]</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>}).to_csv(<span class="ss">f'</span><span class="sc">{</span>output_dir<span class="sc">}</span><span class="ss">rf_model_summary_antara.csv'</span>, index<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Saved rf_model_summary_antara.csv"</span>)</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Partial dependence</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>pdp_summary.to_csv(<span class="ss">f'</span><span class="sc">{</span>output_dir<span class="sc">}</span><span class="ss">rf_partial_dependence_age_gender_antara.csv'</span>, index<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Saved rf_partial_dependence_age_gender_antara.csv"</span>)</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. OCC group labels (from IPUMS 2018 Census coding scheme)</span></span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_major_group(occ):</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> occ <span class="op">==</span> <span class="dv">0</span>: <span class="cf">return</span> <span class="st">'Not Reported'</span></span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">430</span>: <span class="cf">return</span> <span class="st">'Management'</span></span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">730</span>: <span class="cf">return</span> <span class="st">'Business &amp; Financial Operations'</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">950</span>: <span class="cf">return</span> <span class="st">'Financial Specialists'</span></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">1240</span>: <span class="cf">return</span> <span class="st">'Computer &amp; Mathematical'</span></span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">1540</span>: <span class="cf">return</span> <span class="st">'Architecture &amp; Engineering'</span></span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">1980</span>: <span class="cf">return</span> <span class="st">'Life, Physical &amp; Social Science'</span></span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">2060</span>: <span class="cf">return</span> <span class="st">'Community &amp; Social Services'</span></span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">2150</span>: <span class="cf">return</span> <span class="st">'Legal'</span></span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">2550</span>: <span class="cf">return</span> <span class="st">'Education, Training &amp; Library'</span></span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">2920</span>: <span class="cf">return</span> <span class="st">'Arts, Design, Entertainment &amp; Media'</span></span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">3540</span>: <span class="cf">return</span> <span class="st">'Healthcare Practitioners'</span></span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">3650</span>: <span class="cf">return</span> <span class="st">'Healthcare Support'</span></span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">3950</span>: <span class="cf">return</span> <span class="st">'Protective Service'</span></span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">4150</span>: <span class="cf">return</span> <span class="st">'Food Preparation &amp; Serving'</span></span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">4250</span>: <span class="cf">return</span> <span class="st">'Building &amp; Grounds Cleaning'</span></span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">4650</span>: <span class="cf">return</span> <span class="st">'Personal Care &amp; Service'</span></span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">4965</span>: <span class="cf">return</span> <span class="st">'Sales &amp; Related'</span></span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">5940</span>: <span class="cf">return</span> <span class="st">'Office &amp; Administrative Support'</span></span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">6130</span>: <span class="cf">return</span> <span class="st">'Farming, Fishing &amp; Forestry'</span></span>
-<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">6765</span>: <span class="cf">return</span> <span class="st">'Construction &amp; Extraction'</span></span>
-<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">7630</span>: <span class="cf">return</span> <span class="st">'Installation, Maintenance &amp; Repair'</span></span>
-<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">8965</span>: <span class="cf">return</span> <span class="st">'Production'</span></span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> occ <span class="op">&lt;=</span> <span class="dv">9750</span>: <span class="cf">return</span> <span class="st">'Transportation &amp; Material Moving'</span></span>
-<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>: <span class="cf">return</span> <span class="st">'Military Specific'</span></span>
-<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>df_occ <span class="op">=</span> df[[<span class="st">'OCC'</span>]].copy()</span>
-<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>df_occ[<span class="st">'OCC_GROUP'</span>] <span class="op">=</span> (df_occ[<span class="st">'OCC'</span>] <span class="op">//</span> <span class="dv">100</span>) <span class="op">*</span> <span class="dv">100</span></span>
-<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>df_occ[<span class="st">'MAJOR_GROUP'</span>] <span class="op">=</span> df_occ[<span class="st">'OCC'</span>].<span class="bu">apply</span>(get_major_group)</span>
-<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>occ_lookup <span class="op">=</span> (df_occ.groupby([<span class="st">'OCC_GROUP'</span>, <span class="st">'MAJOR_GROUP'</span>])</span>
-<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>              .size().reset_index(name<span class="op">=</span><span class="st">'count'</span>)</span>
-<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>              .sort_values(<span class="st">'count'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>              .drop_duplicates(<span class="st">'OCC_GROUP'</span>)</span>
-<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a>              [[<span class="st">'OCC_GROUP'</span>, <span class="st">'MAJOR_GROUP'</span>]]</span>
-<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a>              .sort_values(<span class="st">'OCC_GROUP'</span>))</span>
-<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a>occ_lookup.to_csv(<span class="ss">f'</span><span class="sc">{</span>output_dir<span class="sc">}</span><span class="ss">occ_group_labels.csv'</span>, index<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"✓ Saved occ_group_labels.csv"</span>)</span>
-<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">All files saved successfully!"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
 
 
 </section>
