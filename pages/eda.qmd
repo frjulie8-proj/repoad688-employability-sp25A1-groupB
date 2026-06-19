@@ -348,13 +348,111 @@ Within the IT career area, **Data Analysis and Mathematics** and **Business Inte
 
 ## Yifan: Employment Rate by Age Group and Gender
 
-![](../assets/figures/employment_age_gender.png)
+```{python}
+import pandas as pd
+import plotly.express as px
+
+person_df = pd.read_csv("../data/processed/person.csv")
+employment_df = pd.read_csv("../data/processed/employment.csv")
+
+df = pd.merge(
+    person_df,
+    employment_df,
+    on=["SERIAL", "PERNUM"],
+    how="inner"
+)
+
+df["AGE"] = pd.to_numeric(df["AGE"], errors="coerce")
+
+df = df[
+    (df["AGE"].notna()) &
+    (df["AGE"] >= 18) &
+    (df["AGE"] <= 80) &
+    (df["SEX_LABEL"].notna()) &
+    (df["EMPSTAT_LABEL"].notna())
+].copy()
+
+df["AGE_GROUP"] = pd.cut(
+    df["AGE"],
+    bins=[17, 24, 34, 44, 54, 64, 80],
+    labels=["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]
+)
+
+df["EMPLOYED_FLAG"] = (df["EMPSTAT_LABEL"] == "Employed").astype(int)
+
+employment_rate_age = (
+    df.groupby(["AGE_GROUP", "SEX_LABEL"], observed=True)["EMPLOYED_FLAG"]
+    .mean()
+    .reset_index()
+)
+
+employment_rate_age["Employment_Rate"] = employment_rate_age["EMPLOYED_FLAG"] * 100
+
+fig = px.bar(
+    employment_rate_age,
+    x="AGE_GROUP",
+    y="Employment_Rate",
+    color="SEX_LABEL",
+    barmode="group",
+    text=employment_rate_age["Employment_Rate"].round(1),
+    title="Employment Rate by Age Group and Gender"
+)
+
+fig.update_layout(
+    xaxis_title="Age Group",
+    yaxis_title="Employment Rate (%)",
+    legend_title="Gender",
+    height=650
+)
+
+fig.show()
+```
 
 The chart shows employment rates by age group and gender. Employment rates increase substantially from the 18–24 age group to the prime working-age groups (25–54), where both males and females maintain employment rates above 75%. Across nearly all age groups, males exhibit slightly higher employment rates than females, with the gap becoming more noticeable among older workers. Employment declines significantly after age 55, particularly for individuals aged 65 and above, reflecting retirement and reduced labor force participation. These results suggest that age plays a major role in employment status, while gender disparities remain present throughout the workforce.
 
 ## Yifan: Income Distribution by Gender
 
-![](../assets/figures/income_gender_boxplot.png)
+```{python}
+import pandas as pd
+import plotly.express as px
+
+person_df = pd.read_csv("../data/processed/person.csv")
+employment_df = pd.read_csv("../data/processed/employment.csv")
+
+df = pd.merge(
+    person_df,
+    employment_df,
+    on=["SERIAL", "PERNUM"],
+    how="inner"
+)
+
+df["INCWAGE"] = pd.to_numeric(df["INCWAGE"], errors="coerce")
+
+income_df = df[
+    (df["INCWAGE"].notna()) &
+    (df["INCWAGE"] > 0) &
+    (df["INCWAGE"] <= 300000) &
+    (df["SEX_LABEL"].notna())
+].copy()
+
+fig = px.box(
+    income_df,
+    x="SEX_LABEL",
+    y="INCWAGE",
+    color="SEX_LABEL",
+    points=False,
+    title="Income Distribution by Gender"
+)
+
+fig.update_layout(
+    xaxis_title="Gender",
+    yaxis_title="Annual Income ($)",
+    showlegend=False,
+    height=650
+)
+
+fig.show()
+```
 
 The box plot compares income distributions between male and female workers. Male workers generally have a higher median income and a wider overall income range than female workers. The larger spread among males indicates greater variation in earnings, including a higher concentration of high-income earners. Female workers show a more compact income distribution, with lower median earnings and fewer extreme values. These findings suggest that gender-based income disparities continue to exist, with males earning more on average and being more represented among the highest-income individuals.
 
