@@ -92,10 +92,6 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../index.html"> 
-<span class="menu-text">Home</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link active" href="../pages/introduction.html" aria-current="page"> 
 <span class="menu-text">Project Overview</span></a>
   </li>  
@@ -139,6 +135,8 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset">Dataset</a></li>
   <li><a href="#team" id="toc-team" class="nav-link" data-scroll-target="#team">Team</a></li>
   <li><a href="#project-phases" id="toc-project-phases" class="nav-link" data-scroll-target="#project-phases">Project Phases</a></li>
+  <li><a href="#key-findings-answering-the-research-questions" id="toc-key-findings-answering-the-research-questions" class="nav-link" data-scroll-target="#key-findings-answering-the-research-questions">Key Findings: Answering the Research Questions</a></li>
+  <li><a href="#supporting-literature" id="toc-supporting-literature" class="nav-link" data-scroll-target="#supporting-literature">Supporting Literature</a></li>
   </ul>
 </nav>
     </div>
@@ -244,11 +242,29 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td>4</td>
-<td>ML methods — clustering, classification, regression, evaluation</td>
+<td>ML methods: clustering, classification, regression, evaluation</td>
 <td>Done</td>
 </tr>
 </tbody>
 </table>
+</section>
+<section id="key-findings-answering-the-research-questions" class="level2">
+<h2 class="anchored" data-anchor-id="key-findings-answering-the-research-questions">Key Findings: Answering the Research Questions</h2>
+<p>After completing the exploratory analysis and the machine-learning models (clustering, gender classification, and wage-gap regression), five conclusions emerge.</p>
+<p><strong>1. A large gender pay gap exists, and most of it is not explained by which jobs people hold.</strong> The regression finds a raw gap of about $24,700 per year, and adding occupation and industry explains only 9.4 percent of it, leaving roughly 91 percent that persists for men and women in the same broad jobs. This points to factors beyond job choice, consistent with Blau and Kahn (2017), who find a large unexplained component and conclude that discrimination cannot be ruled out.</p>
+<p><strong>2. The disparity concentrates at the top of the wage distribution, a glass ceiling.</strong> The K-Means segments show women are close to half of the low and mid-pay tiers but under a quarter of the elite-pay tier, so the gap is widest at the top. This matches Arulampalam, Booth and Bryan (2007), who show gender pay gaps are typically larger at the top of the distribution.</p>
+<p><strong>3. Gender is structurally embedded in the labor market.</strong> A logistic-regression classifier recovers a worker’s sex from economic profile alone at a ROC AUC of 0.83, and gender ranks third of 167 features predicting wage in the Random Forest. That separability reflects strong occupational segregation, consistent with Goldin (2014).</p>
+<p><strong>4. The disparity is national, not regional or demand-driven.</strong> The state map shows the elite-tier female share well below parity in essentially every state, with employer demand and geography barely moving it and only a modest blue-versus-red difference (about 25 percent versus 22 percent). This indicates an economy-wide structural pattern rather than a local effect, in line with the structural explanations of Blau and Kahn (2017).</p>
+<p><strong>5. The gap widens over the career.</strong> The Random Forest predicted-wage trajectory shows men’s and women’s earnings diverging from the late twenties through the prime working years, matching the child-penalty findings of Kleven, Landais and Søgaard (2019).</p>
+</section>
+<section id="supporting-literature" class="level2">
+<h2 class="anchored" data-anchor-id="supporting-literature">Supporting Literature</h2>
+<ol type="1">
+<li>Blau, F. D. and Kahn, L. M. (2017). The Gender Wage Gap: Extent, Trends, and Explanations. <em>Journal of Economic Literature</em>, 55(3), 789-865. <a href="https://www.aeaweb.org/articles?id=10.1257%2Fjel.20160995">Link</a></li>
+<li>Goldin, C. (2014). A Grand Gender Convergence: Its Last Chapter. <em>American Economic Review</em>, 104(4), 1091-1119. <a href="https://www.aeaweb.org/articles?id=10.1257%2Faer.104.4.1091">Link</a></li>
+<li>Arulampalam, W., Booth, A. L. and Bryan, M. L. (2007). Is There a Glass Ceiling over Europe? <em>ILR Review</em>, 60(2), 163-186. <a href="https://journals.sagepub.com/doi/10.1177/001979390706000201">Link</a></li>
+<li>Kleven, H., Landais, C. and Søgaard, J. E. (2019). Children and Gender Inequality: Evidence from Denmark. <em>American Economic Journal: Applied Economics</em>, 11(4), 181-209. <a href="https://www.aeaweb.org/articles?id=10.1257%2Fapp.20180010">Link</a></li>
+</ol>
 
 
 </section>
