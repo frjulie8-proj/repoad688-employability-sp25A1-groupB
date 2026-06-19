@@ -56,7 +56,7 @@ From these tables a single analysis-ready slice, `employed_only`, is built for t
 
 ### A second cleaning pass at load time
 
-A lighter, final cleaning pass lives in the shared loader module (`analysis/utils.py`) and runs every time the data is loaded, so the modeling never re-implements cleaning. The employment loader keeps only positive wages, drops records missing sex or state, maps the detailed industry codes into broad sectors, and discards anything outside those sectors. A shared base loader removes duplicate records by ID, and the location loader parses a clean two-letter state code from the city field. Centralizing the final cleaning here means every exploratory chart and every model sees the same cleaned population.
+A lighter, final cleaning pass lives in the shared loader module (`analysis/utils.py`) and runs every time the data is loaded, so the modeling never re-implements cleaning. The employment loader keeps only positive wages, drops records missing sex or state, maps the detailed industry codes into broad sectors, and discards anything outside those sectors. A shared base loader removes duplicate records by ID, and the location loader parses a clean two-letter state code from the metropolitan-area name field (MSA_NAME_INCOMING). Centralizing the final cleaning here means every exploratory chart and every model sees the same cleaned population.
 
 ## Connecting the Two Datasets
 
