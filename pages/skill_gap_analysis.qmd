@@ -52,7 +52,7 @@ df_skills
 ## Skill Heatmap
 
 ```{python}
-os.makedirs("assets/figures", exist_ok=True)
+os.makedirs("../assets/figures", exist_ok=True)
 
 fig = px.imshow(
     df_skills,
@@ -69,7 +69,7 @@ fig.update_layout(
     xaxis_title="Skill",
     yaxis_title="Team Member"
 )
-#fig.write_image("../assets/figures/skill_heatmap.png", width=1100, height=500, scale=2)
+#fig.write_image("../assets/figures/skill_heatmap.png")
 fig.show()
 ```
 
@@ -129,11 +129,10 @@ fig2.update_layout(
     title_font=PLOTLY_THEME["title_font"],
     template=PLOTLY_THEME["template"]
 )
-#fig2.write_image("../assets/figures/skill_gap_bar.png", width=1100, height=550, scale=2)
+#fig2.write_image("../assets/figures/skill_gap_bar.png")
 fig2.show()
 ```
 
-![Skill Gap Bar Chart](../assets/figures/skill_gap_bar.png)
 
 ---
 
