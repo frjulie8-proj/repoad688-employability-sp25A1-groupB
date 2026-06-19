@@ -17,18 +17,8 @@ data/processed/employed_only.csv
 data/clean/employed_only.csv
 data/raw/lightcast_2024_new.csv
 data/processed/lightcast_clean.csv
-assets/figures/*.html
-data/processed/*.csv
+assets/figures/
+data/processed/
+env/
 
-!data/processed/wage_gap_decomposition_antara.csv
-!data/processed/rf_feature_importance_antara.csv
-!data/processed/rf_model_summary_antara.csv
-!data/processed/rf_partial_dependence_age_gender_antara.csv
-
-# Python bytecode cache
-__pycache__/
-*.py[cod]
-
-# macOS
-.DS_Store
-data/clean/
+/env/
