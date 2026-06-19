@@ -182,6 +182,101 @@ The pipeline runs in three steps via `etl/etl_pipeline.ipynb`:
 - **Missing value strategies:** Salary filled with median; education/employment type filled with Unknown; experience left as-is (null = not specified)
 - **Red/Blue state join:** POLITICAL_LEAN column ready to merge once state_political_lean.csv is supplied
 
+### Lightcast ETL Workflow
+
+The Lightcast job-postings dataset was processed through a three-stage ETL pipeline implemented in `etl/etl_pipeline.ipynb`. The pipeline executes the Extract (`01_extract.ipynb`), Transform (`02_transform.ipynb`), and Load (`03_load.ipynb`) stages. During transformation, metadata, tracking, and redundant classification fields were removed, missing values were handled using variable-specific strategies, and the resulting dataset was saved as `lightcast_clean.csv`. The cleaned dataset was then decomposed into subject-area tables linked by the posting identifier (`ID`) to support analysis of salary, education, experience, occupation, industry, location, and skills requirements.
+
+```{mermaid}
+flowchart LR
+
+A[Raw Lightcast Dataset<br/>131 Columns] --> B[01_extract.ipynb]
+B --> C[02_transform.ipynb]
+C --> D[lightcast_clean.csv<br/>52 Selected Columns]
+D --> E[03_load.ipynb]
+
+E --> F[lightcast_job_postings_relational.csv]
+E --> G[lightcast_salary.csv]
+E --> H[lightcast_location.csv]
+E --> I[lightcast_industry.csv]
+E --> J[lightcast_education.csv]
+E --> K[lightcast_experience.csv]
+E --> L[lightcast_skills.csv]
+E --> M[lightcast_occupation.csv]
+```
+
+### Lightcast Entity Relationship Diagram (ERD)
+
+The cleaned Lightcast dataset is organized around a central job-posting record. Each posting is identified by a unique `ID`, which links the subject-area tables. This design reduces redundancy and allows salary, education, experience, occupation, industry, location, and skills information to be analyzed independently while still referring back to the same job posting.
+
+```{mermaid}
+erDiagram
+
+    LIGHTCAST_JOB_POSTINGS {
+        string ID PK
+        string TITLE_CLEAN
+        string COMPANY_NAME
+        string EMPLOYMENT_TYPE_NAME
+        string REMOTE_TYPE_NAME
+    }
+
+    LIGHTCAST_SALARY {
+        string ID PK,FK
+        float SALARY_FROM
+        float SALARY_TO
+    }
+
+    LIGHTCAST_LOCATION {
+        string ID PK,FK
+        string CITY_NAME
+        string MSA_NAME_INCOMING
+    }
+
+    LIGHTCAST_INDUSTRY {
+        string ID PK,FK
+        string NAICS_2022_2_NAME
+        string NAICS_2022_4_NAME
+        string NAICS_2022_6_NAME
+        string LIGHTCAST_SECTORS_NAME
+    }
+
+    LIGHTCAST_EDUCATION {
+        string ID PK,FK
+        string EDUCATION_LEVELS_NAME
+        string MIN_EDULEVELS_NAME
+        string MAX_EDULEVELS_NAME
+    }
+
+    LIGHTCAST_EXPERIENCE {
+        string ID PK,FK
+        float MIN_YEARS_EXPERIENCE
+        float MAX_YEARS_EXPERIENCE
+    }
+
+    LIGHTCAST_SKILLS {
+        string ID PK,FK
+        string SKILLS_NAME
+        string COMMON_SKILLS_NAME
+        string SOFTWARE_SKILLS_NAME
+    }
+
+    LIGHTCAST_OCCUPATION {
+        string ID PK,FK
+        string SOC_2_NAME
+        string SOC_5_NAME
+        string ONET_NAME
+        string LOT_V6_CAREER_AREA_NAME
+        string LOT_V6_OCCUPATION_GROUP_NAME
+    }
+
+    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_SALARY : ID
+    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_LOCATION : ID
+    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_INDUSTRY : ID
+    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_EDUCATION : ID
+    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_EXPERIENCE : ID
+    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_SKILLS : ID
+    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_OCCUPATION : ID
+```
+
 ### Connecting the Two Datasets
 
 Because IPUMS describes individual workers and Lightcast describes job postings, the two share no common records. There is no person-to-posting key linking them, so they are joined only at the level where they genuinely overlap, which is geography. Each dataset is aggregated to the state level (workforce summaries from IPUMS, posting volume and demand from Lightcast) and merged on state, so the cross-dataset analysis is presented per state rather than per individual. Both datasets cover 2024, so they describe the same period.
