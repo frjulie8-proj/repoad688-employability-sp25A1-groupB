@@ -354,7 +354,7 @@
     "href": "pages/introduction.html#project-phases",
     "title": "Project Overview",
     "section": "Project Phases",
-    "text": "Project Phases\n\n\n\nPhase\nDescription\nStatus\n\n\n\n\n1\nRepo setup, ETL pipeline, site initialized\nDone\n\n\n2\nData extraction, relational table build\nDone\n\n\n3\nEDA, skill gap analysis, site restructure\nIn Progress\n\n\n4\nML methods — clustering\nUpcoming\n\n\n5\nNLP methods — job description mining\nUpcoming"
+    "text": "Project Phases\n\n\n\n\n\n\n\n\nPhase\nDescription\nStatus\n\n\n\n\n1\nRepo setup, ETL pipeline, site initialized\nDone\n\n\n2\nData extraction, relational table build\nDone\n\n\n3\nEDA, skill gap analysis, site restructure\nDone\n\n\n4\nML methods — clustering, classification, regression, evaluation\nDone"
   },
   {
     "objectID": "pages/skill_gap_analysis.html",
