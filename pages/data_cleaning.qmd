@@ -208,74 +208,8 @@ E --> M[lightcast_occupation.csv]
 
 The cleaned Lightcast dataset is organized around a central job-posting record. Each posting is identified by a unique `ID`, which links the subject-area tables. This design reduces redundancy and allows salary, education, experience, occupation, industry, location, and skills information to be analyzed independently while still referring back to the same job posting.
 
-```{mermaid}
-erDiagram
+![Lightcast relational schema showing the relationship between job postings, salary, education, experience, occupation, industry, location, and skills tables.](../assets/figures/lightcast_erd.svg){fig-align="center"}
 
-    LIGHTCAST_JOB_POSTINGS {
-        string ID PK
-        string TITLE_CLEAN
-        string COMPANY_NAME
-        string EMPLOYMENT_TYPE_NAME
-        string REMOTE_TYPE_NAME
-    }
-
-    LIGHTCAST_SALARY {
-        string ID
-        float SALARY_FROM
-        float SALARY_TO
-    }
-
-    LIGHTCAST_LOCATION {
-        string ID
-        string CITY_NAME
-        string MSA_NAME_INCOMING
-    }
-
-    LIGHTCAST_INDUSTRY {
-        string ID
-        string NAICS_2022_2_NAME
-        string NAICS_2022_4_NAME
-        string NAICS_2022_6_NAME
-        string LIGHTCAST_SECTORS_NAME
-    }
-
-    LIGHTCAST_EDUCATION {
-        string ID
-        string EDUCATION_LEVELS_NAME
-        string MIN_EDULEVELS_NAME
-        string MAX_EDULEVELS_NAME
-    }
-
-    LIGHTCAST_EXPERIENCE {
-        string ID
-        float MIN_YEARS_EXPERIENCE
-        float MAX_YEARS_EXPERIENCE
-    }
-
-    LIGHTCAST_SKILLS {
-        string ID
-        string SKILLS_NAME
-        string COMMON_SKILLS_NAME
-        string SOFTWARE_SKILLS_NAME
-    }
-
-    LIGHTCAST_OCCUPATION {
-        string ID
-        string SOC_2_NAME
-        string SOC_5_NAME
-        string ONET_NAME
-        string LOT_V6_CAREER_AREA_NAME
-        string LOT_V6_OCCUPATION_GROUP_NAME
-    }
-
-    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_SALARY : ID
-    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_LOCATION : ID
-    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_INDUSTRY : ID
-    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_EDUCATION : ID
-    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_EXPERIENCE : ID
-    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_SKILLS : ID
-    LIGHTCAST_JOB_POSTINGS ||--|| LIGHTCAST_OCCUPATION : ID
-```
 ### Connecting the Two Datasets
 
 Because IPUMS describes individual workers and Lightcast describes job postings, the two share no common records. There is no person-to-posting key linking them, so they are joined only at the level where they genuinely overlap, which is geography. Each dataset is aggregated to the state level (workforce summaries from IPUMS, posting volume and demand from Lightcast) and merged on state, so the cross-dataset analysis is presented per state rather than per individual. Both datasets cover 2024, so they describe the same period.
