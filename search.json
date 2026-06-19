@@ -375,7 +375,7 @@
     "href": "pages/skill_gap_analysis.html#skill-heatmap",
     "title": "Skill Gap Analysis",
     "section": "Skill Heatmap",
-    "text": "Skill Heatmap\n\nos.makedirs(\"assets/figures\", exist_ok=True)\n\nfig = px.imshow(\n    df_skills,\n    text_auto=True,\n    color_continuous_scale=\"RdYlGn\",\n    zmin=0, zmax=5,\n    aspect=\"auto\",\n    title=\"Team Skill Levels (1=Beginner, 5=Expert)\",\n    template=\"plotly_white\"\n)\nfig.update_layout(\n    font=PLOTLY_THEME[\"font\"],\n    title_font=PLOTLY_THEME[\"title_font\"],\n    xaxis_title=\"Skill\",\n    yaxis_title=\"Team Member\"\n)\nfig.write_image(\"assets/figures/skill_heatmap.png\", width=1100, height=500, scale=2)\nfig.show()\n\n                            \n                                            \n\n\n\n\n\nTeam Skill Heatmap"
+    "text": "Skill Heatmap\n\nos.makedirs(\"assets/figures\", exist_ok=True)\n\nfig = px.imshow(\n    df_skills,\n    text_auto=True,\n    color_continuous_scale=\"RdYlGn\",\n    zmin=0, zmax=5,\n    aspect=\"auto\",\n    title=\"Team Skill Levels (1=Beginner, 5=Expert)\",\n    template=\"plotly_white\"\n)\nfig.update_layout(\n    font=PLOTLY_THEME[\"font\"],\n    title_font=PLOTLY_THEME[\"title_font\"],\n    xaxis_title=\"Skill\",\n    yaxis_title=\"Team Member\"\n)\nfig.write_image(\"assets/figures/skill_heatmap.png\", width=1100, height=500, scale=2)\nfig.show()"
   },
   {
     "objectID": "pages/skill_gap_analysis.html#top-in-demand-skills-from-lightcast-job-postings",
