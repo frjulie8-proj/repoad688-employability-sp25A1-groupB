@@ -144,7 +144,7 @@ fig2.show()
 | Antara | Machine Learning, Statistics | Coursera ML, Khan Academy Stats |
 | Julie | Machine Learning, AWS | fast.ai, AWS Training |
 | Yifan | TBD | TBD |
-| Zhiyang | TBD | TBD |
+| Zhiyang | AWS, Statistics | AWS Training |
 | Alina | Machine Learning, Advanced SQL | Coursera ML, Mode SQL Tutorial |
 
 ### Team Collaboration Plan
@@ -152,5 +152,5 @@ fig2.show()
 - **Antara** leads: Data Cleaning, SQL, Business Analytics, Excel
 - **Julie** leads: Data Visualization, EDA
 - **Yifan** leads: TBD
-- **Zhiyang** leads: TBD
+- **Zhiyang** leads: AWS Related, BA
 - **Alina** leads: Skill Gap Analysis, Career Strategy, Insights & Presentation
