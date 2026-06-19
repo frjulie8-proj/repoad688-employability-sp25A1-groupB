@@ -424,62 +424,41 @@
     "href": "analysis/live_demo_antara.html",
     "title": "Live Demo: Gender Wage Gap — ML Analysis",
     "section": "",
-    "text": "Course: AD688 Applied Business Analytics Dataset: IPUMS USA 2024 ACS + Lightcast Job Postings\nResearch Question: How much of the gender wage gap is explained by occupation and industry choice?\nThis notebook demonstrates: 1. Linear Regression Decomposition 2. Random Forest Feature Importance"
+    "text": "The Random Forest model was trained using PySpark MLlib in analysis/ml_rf_antara.py.\nTo keep the live demo fast, this notebook loads the saved PySpark outputs instead of retraining the model.\nimport pandas as pd\nimport plotly.express as px\nfrom pathlib import Path\nimport sys\n\nroot = Path.cwd()\nwhile not (root / \"_quarto.yml\").exists() and root != root.parent:\n    root = root.parent\n\nsys.path.insert(0, str(root / \"analysis\"))\n\nfrom utils import PROCESSED, apply_theme\n\nprint(f\"Repo root: {root}\")\nprint(f\"Processed folder: {PROCESSED}\")"
   },
   {
-    "objectID": "analysis/live_demo_antara.html#setup",
-    "href": "analysis/live_demo_antara.html#setup",
+    "objectID": "analysis/live_demo_antara.html#load-pyspark-random-forest-outputs",
+    "href": "analysis/live_demo_antara.html#load-pyspark-random-forest-outputs",
     "title": "Live Demo: Gender Wage Gap — ML Analysis",
-    "section": "Setup",
-    "text": "Setup\n\nimport pandas as pd\nimport numpy as np\nimport plotly.express as px\nimport plotly.graph_objects as go\nfrom sklearn.linear_model import LinearRegression\nfrom sklearn.ensemble import RandomForestRegressor\nfrom sklearn.model_selection import train_test_split\nimport sys\nimport pathlib\n\nroot = pathlib.Path.cwd()\nwhile not (root / \"_quarto.yml\").exists() and root != root.parent:\n    root = root.parent\n\nsys.path.insert(0, str(root / \"analysis\"))\n\nfrom utils import load_employment, PROCESSED, apply_theme\n\ndf = load_employment()\n\nprint(f\"Loaded {len(df):,} employed workers\")\nprint(f\"Columns: {list(df.columns)}\")\n\ndf[[\"AGE\", \"SEX_LABEL\", \"OCC\", \"IND\", \"INCWAGE\", \"STATE_NAME\"]].head()"
+    "section": "Load PySpark Random Forest outputs",
+    "text": "Load PySpark Random Forest outputs\n\nrf_summary = pd.read_csv(PROCESSED / \"rf_model_summary_antara.csv\")\nrf_imp = pd.read_csv(PROCESSED / \"rf_feature_importance_antara.csv\")\npdp = pd.read_csv(PROCESSED / \"rf_partial_dependence_age_gender_antara.csv\")\n\ndisplay(rf_summary)\nrf_imp.head(10)"
   },
   {
-    "objectID": "analysis/live_demo_antara.html#step-1-context-gender-gap-in-it-vs-overall-workforce",
-    "href": "analysis/live_demo_antara.html#step-1-context-gender-gap-in-it-vs-overall-workforce",
+    "objectID": "analysis/live_demo_antara.html#feature-importance",
+    "href": "analysis/live_demo_antara.html#feature-importance",
     "title": "Live Demo: Gender Wage Gap — ML Analysis",
-    "section": "Step 1: Context — Gender Gap in IT vs Overall Workforce",
-    "text": "Step 1: Context — Gender Gap in IT vs Overall Workforce\nIT workforce = Census OCC codes 1000–1999.\n\ndf_it = df[(df[\"OCC\"] &gt;= 1000) & (df[\"OCC\"] &lt;= 1999)]\n\noverall_female_pct = round(df[df[\"SEX_LABEL\"] == \"Female\"].shape[0] / len(df) * 100, 1)\nit_female_pct = round(df_it[df_it[\"SEX_LABEL\"] == \"Female\"].shape[0] / len(df_it) * 100, 1)\n\noverall_gap = (\n    df[df[\"SEX_LABEL\"] == \"Male\"][\"INCWAGE\"].mean()\n    - df[df[\"SEX_LABEL\"] == \"Female\"][\"INCWAGE\"].mean()\n)\n\nit_gap = (\n    df_it[df_it[\"SEX_LABEL\"] == \"Male\"][\"INCWAGE\"].mean()\n    - df_it[df_it[\"SEX_LABEL\"] == \"Female\"][\"INCWAGE\"].mean()\n)\n\nprint(f\"Overall workforce: {overall_female_pct}% female | Wage gap: ${overall_gap:,.0f}\")\nprint(f\"IT workforce:      {it_female_pct}% female | Wage gap: ${it_gap:,.0f}\")\n\nfig = go.Figure()\nfig.add_trace(go.Bar(\n    name=\"Male\",\n    x=[\"Overall\", \"IT\"],\n    y=[100 - overall_female_pct, 100 - it_female_pct],\n    marker_color=\"#2c7bb6\",\n))\nfig.add_trace(go.Bar(\n    name=\"Female\",\n    x=[\"Overall\", \"IT\"],\n    y=[overall_female_pct, it_female_pct],\n    marker_color=\"#d7191c\",\n))\n\nfig.update_layout(\n    barmode=\"group\",\n    title=\"Gender Distribution: Overall vs IT Workforce\",\n    yaxis_title=\"%\",\n    template=\"plotly_white\",\n)\n\napply_theme(fig)\nfig.show()"
+    "section": "Feature importance",
+    "text": "Feature importance\n\ntop15 = rf_imp.head(15).copy()\n\ndef clean_feature_label(f):\n    if f == \"AGE\":\n        return \"Age\"\n    if f.startswith(\"SEX_LABEL_\"):\n        return f.replace(\"SEX_LABEL_\", \"\")\n    if f.startswith(\"STATE_NAME_\"):\n        return f.replace(\"STATE_NAME_\", \"\")\n    if f.startswith(\"RACE_LABEL_\"):\n        return f.replace(\"RACE_LABEL_\", \"\")\n    if f.startswith(\"OCC_GROUP_\"):\n        return f.replace(\"OCC_GROUP_\", \"Occupation group \")\n    if f.startswith(\"IND_GROUP_\"):\n        return f.replace(\"IND_GROUP_\", \"Industry group \")\n    return f\n\ntop15[\"label\"] = top15[\"feature\"].apply(clean_feature_label)\n\nfig = px.bar(\n    top15.sort_values(\"importance\"),\n    x=\"importance\",\n    y=\"label\",\n    orientation=\"h\",\n    color=\"is_gender\",\n    title=\"PySpark Random Forest Feature Importance\",\n    labels={\"importance\": \"Importance\", \"label\": \"\", \"is_gender\": \"Gender feature\"}\n)\n\napply_theme(fig)\nfig.show()"
   },
   {
-    "objectID": "analysis/live_demo_antara.html#step-2-baseline-regression",
-    "href": "analysis/live_demo_antara.html#step-2-baseline-regression",
+    "objectID": "analysis/live_demo_antara.html#gender-rank",
+    "href": "analysis/live_demo_antara.html#gender-rank",
     "title": "Live Demo: Gender Wage Gap — ML Analysis",
-    "section": "Step 2: Baseline Regression",
-    "text": "Step 2: Baseline Regression\nFeatures: age, race, state, and sex.\nThis estimates the gender wage gap before controlling for occupation and industry.\n\nbaseline_df = df[[\"AGE\", \"RACE_LABEL\", \"STATE_NAME\", \"SEX_LABEL\", \"INCWAGE\"]].copy()\n\nbaseline_encoded = pd.get_dummies(\n    baseline_df,\n    columns=[\"RACE_LABEL\", \"STATE_NAME\", \"SEX_LABEL\"],\n    drop_first=True,\n)\n\nX_baseline = baseline_encoded.drop(columns=[\"INCWAGE\"])\ny_baseline = baseline_encoded[\"INCWAGE\"]\n\nmodel_baseline = LinearRegression()\nmodel_baseline.fit(X_baseline, y_baseline)\n\nsex_col = [c for c in X_baseline.columns if \"SEX_LABEL\" in c][0]\nbaseline_gender_coef = model_baseline.coef_[list(X_baseline.columns).index(sex_col)]\n\nprint(f\"Baseline R²: {model_baseline.score(X_baseline, y_baseline):.4f}\")\nprint(f\"Raw gender gap controlling for age, race, and state: ${baseline_gender_coef:,.2f}\")"
+    "section": "Gender rank",
+    "text": "Gender rank\n\ngender_rows = rf_imp[rf_imp[\"is_gender\"] == True].copy()\n\nif len(gender_rows) &gt; 0:\n    first_gender_rank = gender_rows.index[0] + 1\n    total_features = len(rf_imp)\n    print(f\"Gender first appears at rank #{first_gender_rank} out of {total_features} features.\")\n    display(gender_rows.head())\nelse:\n    print(\"No gender feature found.\")"
   },
   {
-    "objectID": "analysis/live_demo_antara.html#step-3-full-regression",
-    "href": "analysis/live_demo_antara.html#step-3-full-regression",
+    "objectID": "analysis/live_demo_antara.html#predicted-wage-by-age-and-gender",
+    "href": "analysis/live_demo_antara.html#predicted-wage-by-age-and-gender",
     "title": "Live Demo: Gender Wage Gap — ML Analysis",
-    "section": "Step 3: Full Regression",
-    "text": "Step 3: Full Regression\nFeatures: age, race, state, sex, occupation group, and industry group.\nThis estimates how much of the gap remains after controlling for job type.\n\nfull_df = df[[\"AGE\", \"RACE_LABEL\", \"STATE_NAME\", \"SEX_LABEL\", \"OCC\", \"IND\", \"INCWAGE\"]].copy()\n\nfull_df[\"OCC_GROUP\"] = (full_df[\"OCC\"] // 100) * 100\nfull_df[\"IND_GROUP\"] = (full_df[\"IND\"] // 1000) * 1000\n\nfull_encoded = pd.get_dummies(\n    full_df.drop(columns=[\"OCC\", \"IND\"]),\n    columns=[\"RACE_LABEL\", \"STATE_NAME\", \"SEX_LABEL\", \"OCC_GROUP\", \"IND_GROUP\"],\n    drop_first=True,\n)\n\nX_full = full_encoded.drop(columns=[\"INCWAGE\"])\ny_full = full_encoded[\"INCWAGE\"]\n\nmodel_full = LinearRegression()\nmodel_full.fit(X_full, y_full)\n\nsex_col_full = [c for c in X_full.columns if \"SEX_LABEL\" in c][0]\nfull_gender_coef = model_full.coef_[list(X_full.columns).index(sex_col_full)]\n\nexplained_pct = ((baseline_gender_coef - full_gender_coef) / baseline_gender_coef) * 100\nunexplained_pct = 100 - explained_pct\n\nprint(f\"Full model R²: {model_full.score(X_full, y_full):.4f}\")\nprint(f\"Adjusted gender gap: ${full_gender_coef:,.2f}\")\nprint(f\"Explained by occupation/industry: {explained_pct:.1f}%\")\nprint(f\"Unexplained gap: {unexplained_pct:.1f}%\")"
+    "section": "Predicted wage by age and gender",
+    "text": "Predicted wage by age and gender\n\nfig = px.line(\n    pdp,\n    x=\"AGE\",\n    y=\"predicted_wage\",\n    color=\"SEX\",\n    title=\"PySpark Random Forest: Predicted Wage by Age and Gender\",\n    labels={\n        \"AGE\": \"Age\",\n        \"predicted_wage\": \"Predicted Annual Wage ($)\",\n        \"SEX\": \"Gender\"\n    }\n)\n\napply_theme(fig)\nfig.show()"
   },
   {
-    "objectID": "analysis/live_demo_antara.html#step-4-decomposition-visualization",
-    "href": "analysis/live_demo_antara.html#step-4-decomposition-visualization",
+    "objectID": "analysis/live_demo_antara.html#key-takeaway",
+    "href": "analysis/live_demo_antara.html#key-takeaway",
     "title": "Live Demo: Gender Wage Gap — ML Analysis",
-    "section": "Step 4: Decomposition Visualization",
-    "text": "Step 4: Decomposition Visualization\n\nexplained_amt = baseline_gender_coef - full_gender_coef\n\nfig_wf = go.Figure(go.Waterfall(\n    orientation=\"v\",\n    measure=[\"absolute\", \"relative\", \"total\"],\n    x=[\"Raw Gender Gap\", \"Explained by&lt;br&gt;Occupation/Industry\", \"Unexplained Gap\"],\n    y=[baseline_gender_coef, -explained_amt, 0],\n    text=[\n        f\"${baseline_gender_coef:,.0f}\",\n        f\"-${explained_amt:,.0f}\",\n        f\"${full_gender_coef:,.0f}\",\n    ],\n    textposition=\"outside\",\n    connector={\"line\": {\"color\": \"#888\"}},\n    decreasing={\"marker\": {\"color\": \"#1a9641\"}},\n    increasing={\"marker\": {\"color\": \"#d7191c\"}},\n    totals={\"marker\": {\"color\": \"#2c7bb6\"}},\n))\n\nfig_wf.update_layout(\n    title=\"Gender Wage Gap Decomposition\",\n    yaxis_title=\"Annual Wage Gap ($)\",\n    showlegend=False,\n    template=\"plotly_white\",\n)\n\napply_theme(fig_wf)\nfig_wf.show()"
-  },
-  {
-    "objectID": "analysis/live_demo_antara.html#step-5-random-forest-feature-importance",
-    "href": "analysis/live_demo_antara.html#step-5-random-forest-feature-importance",
-    "title": "Live Demo: Gender Wage Gap — ML Analysis",
-    "section": "Step 5: Random Forest Feature Importance",
-    "text": "Step 5: Random Forest Feature Importance\nUses a 50,000-row sample for faster live demo execution.\n\nrf_df = df[[\"AGE\", \"RACE_LABEL\", \"STATE_NAME\", \"SEX_LABEL\", \"OCC\", \"IND\", \"INCWAGE\"]].sample(\n    n=50000,\n    random_state=42,\n).copy()\n\nrf_df[\"OCC_GROUP\"] = (rf_df[\"OCC\"] // 100) * 100\nrf_df[\"IND_GROUP\"] = (rf_df[\"IND\"] // 1000) * 1000\n\nrf_encoded = pd.get_dummies(\n    rf_df.drop(columns=[\"OCC\", \"IND\"]),\n    columns=[\"RACE_LABEL\", \"STATE_NAME\", \"SEX_LABEL\", \"OCC_GROUP\", \"IND_GROUP\"],\n    drop_first=True,\n)\n\nX = rf_encoded.drop(columns=[\"INCWAGE\"])\ny = rf_encoded[\"INCWAGE\"]\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X,\n    y,\n    test_size=0.2,\n    random_state=42,\n)\n\nrf_model = RandomForestRegressor(\n    n_estimators=100,\n    max_depth=10,\n    random_state=42,\n    n_jobs=-1,\n)\n\nrf_model.fit(X_train, y_train)\n\nprint(f\"Random Forest trained on {len(X_train):,} workers\")\nprint(f\"Train R²: {rf_model.score(X_train, y_train):.4f}\")\nprint(f\"Test R²: {rf_model.score(X_test, y_test):.4f}\")"
-  },
-  {
-    "objectID": "analysis/live_demo_antara.html#step-6-feature-importance-where-does-gender-rank",
-    "href": "analysis/live_demo_antara.html#step-6-feature-importance-where-does-gender-rank",
-    "title": "Live Demo: Gender Wage Gap — ML Analysis",
-    "section": "Step 6: Feature Importance — Where Does Gender Rank?",
-    "text": "Step 6: Feature Importance — Where Does Gender Rank?\n\nimportances = pd.DataFrame({\n    \"feature\": X.columns,\n    \"importance\": rf_model.feature_importances_,\n}).sort_values(\"importance\", ascending=False).reset_index(drop=True)\n\nsex_rank = importances[importances[\"feature\"].str.contains(\"SEX_LABEL\")].index[0] + 1\n\nprint(f\"Gender ranks #{sex_rank} of {len(importances)} features\")\n\nocc_path = PROCESSED / \"occ_group_labels.csv\"\n\nif occ_path.exists():\n    occ_labels = pd.read_csv(occ_path)\n    occ_lookup = dict(zip(occ_labels[\"OCC_GROUP\"], occ_labels[\"MAJOR_GROUP\"]))\nelse:\n    occ_lookup = {}\n\ndef clean_label(f):\n    if f == \"AGE\":\n        return \"Age\"\n    if \"SEX_LABEL\" in f:\n        return \"Gender (Male)\"\n    if f.startswith(\"OCC_GROUP_\"):\n        grp = int(f.replace(\"OCC_GROUP_\", \"\"))\n        return f\"Occupation: {occ_lookup.get(grp, grp)}\"\n    if f.startswith(\"IND_GROUP_\"):\n        return f\"Industry Group {f.replace('IND_GROUP_', '')}\"\n    if f.startswith(\"STATE_NAME_\"):\n        return f\"State: {f.replace('STATE_NAME_', '')}\"\n    if f.startswith(\"RACE_LABEL_\"):\n        return f\"Race: {f.replace('RACE_LABEL_', '')}\"\n    return f\n\ntop15 = importances.head(15).copy()\ntop15[\"label\"] = top15[\"feature\"].apply(clean_label)\ntop15[\"is_gender\"] = top15[\"feature\"].str.contains(\"SEX_LABEL\")\n\nfig_lollipop = go.Figure()\n\nfig_lollipop.add_trace(go.Scatter(\n    x=top15[\"importance\"],\n    y=top15[\"label\"],\n    mode=\"markers\",\n    marker=dict(\n        size=14,\n        color=top15[\"is_gender\"].map({True: \"#d7191c\", False: \"#2c7bb6\"}),\n    ),\n))\n\nfor _, row in top15.iterrows():\n    fig_lollipop.add_shape(\n        type=\"line\",\n        x0=0,\n        x1=row[\"importance\"],\n        y0=row[\"label\"],\n        y1=row[\"label\"],\n        line=dict(\n            color=\"#d7191c\" if row[\"is_gender\"] else \"#cccccc\",\n            width=2,\n        ),\n    )\n\nfig_lollipop.update_layout(\n    title=f\"Random Forest Feature Importance — Gender Ranks #{sex_rank} of {len(importances)}\",\n    xaxis_title=\"Importance\",\n    yaxis_title=\"\",\n    yaxis=dict(categoryorder=\"total ascending\"),\n    template=\"plotly_white\",\n)\n\napply_theme(fig_lollipop)\nfig_lollipop.show()"
-  },
-  {
-    "objectID": "analysis/live_demo_antara.html#key-findings",
-    "href": "analysis/live_demo_antara.html#key-findings",
-    "title": "Live Demo: Gender Wage Gap — ML Analysis",
-    "section": "Key Findings",
-    "text": "Key Findings\n\n\n\nFinding\nValue\n\n\n\n\nRaw gender wage gap\n~$24,749/year\n\n\nAdjusted gap after occupation and industry\n~$22,426/year\n\n\nExplained by job segregation\n~9.4%\n\n\nUnexplained gap\n~90.6%\n\n\nGender rank in Random Forest\n#3 of 167 features\n\n\n\n\nInterpretation\nThe gender wage gap is not primarily explained by women choosing lower-paying jobs. Most of the gap persists even after controlling for broad occupation and industry groups. The Random Forest model independently confirms that gender remains one of the strongest predictors of wage in the available feature set."
+    "section": "Key takeaway",
+    "text": "Key takeaway\nThe PySpark Random Forest confirms that gender remains a strong predictor of wage after accounting for age, race, state, occupation, and industry."
   }
 ]
