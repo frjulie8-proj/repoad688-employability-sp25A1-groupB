@@ -28,6 +28,5 @@ title: Project Overview
 |-------|-------------|--------|
 | 1 | Repo setup, ETL pipeline, site initialized | Done |
 | 2 | Data extraction, relational table build | Done |
-| 3 | EDA, skill gap analysis, site restructure | In Progress |
-| 4 | ML methods — clustering | Upcoming |
-| 5 | NLP methods — job description mining | Upcoming |
+| 3 | EDA, skill gap analysis, site restructure | Done |
+| 4 | ML methods — clustering, classification, regression, evaluation | Done |
