@@ -135,7 +135,10 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a>
+  <ul class="collapse">
+  <li><a href="#data-sources" id="toc-data-sources" class="nav-link" data-scroll-target="#data-sources">Data Sources</a></li>
+  </ul></li>
   <li><a href="#etl-pipeline" id="toc-etl-pipeline" class="nav-link" data-scroll-target="#etl-pipeline">ETL Pipeline</a></li>
   <li><a href="#transform-decisions" id="toc-transform-decisions" class="nav-link" data-scroll-target="#transform-decisions">Transform Decisions</a></li>
   <li><a href="#structuring-cleaning-the-ipums-data" id="toc-structuring-cleaning-the-ipums-data" class="nav-link" data-scroll-target="#structuring-cleaning-the-ipums-data">Structuring &amp; Cleaning the IPUMS Data</a>
@@ -145,6 +148,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#the-analysis-table-employed_only" id="toc-the-analysis-table-employed_only" class="nav-link" data-scroll-target="#the-analysis-table-employed_only">The analysis table: employed_only</a></li>
   <li><a href="#a-second-cleaning-pass-at-load-time" id="toc-a-second-cleaning-pass-at-load-time" class="nav-link" data-scroll-target="#a-second-cleaning-pass-at-load-time">A second cleaning pass at load time</a></li>
   </ul></li>
+  <li><a href="#connecting-the-two-datasets" id="toc-connecting-the-two-datasets" class="nav-link" data-scroll-target="#connecting-the-two-datasets">Connecting the Two Datasets</a></li>
   <li><a href="#processed-tables" id="toc-processed-tables" class="nav-link" data-scroll-target="#processed-tables">Processed Tables</a></li>
   </ul>
 </nav>
@@ -173,7 +177,42 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>This section documents the ETL pipeline used to extract, clean, and structure the raw Lightcast job postings dataset for analysis.</p>
+<p>This section documents how the project’s two raw datasets are extracted, cleaned, and structured into analysis-ready tables.</p>
+<section id="data-sources" class="level3">
+<h3 class="anchored" data-anchor-id="data-sources">Data Sources</h3>
+<p>The project combines two complementary datasets, both covering 2024: one describes the actual workforce and one describes employer demand.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Dataset</th>
+<th>Source</th>
+<th>What it is</th>
+<th>Scale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>IPUMS USA</td>
+<td>U.S. Census American Community Survey (ACS) Public Use Microdata Sample, 2024</td>
+<td>Individual-level survey microdata on people: demographics, employment, occupation, industry, and wages</td>
+<td>About 3.2M person records, narrowing to about 1.57M employed with valid wages</td>
+</tr>
+<tr class="even">
+<td>Lightcast</td>
+<td>Lightcast job-postings database, 2024</td>
+<td>Online IT job postings: title, location, salary range, skills, education, and experience</td>
+<td>About 72K postings in the core table, expanding to millions of posting-skill records</td>
+</tr>
+</tbody>
+</table>
+<p>The IPUMS data is the supply side, covering who is in the workforce and what they earn, and it underpins the clustering, gender classification, and wage-gap regression. The Lightcast data is the demand side, covering what employers advertise for, and it supplies the job-market context.</p>
+</section>
 </section>
 <section id="etl-pipeline" class="level2">
 <h2 class="anchored" data-anchor-id="etl-pipeline">ETL Pipeline</h2>
@@ -277,6 +316,11 @@ ul.task-list li input[type="checkbox"] {
 <h3 class="anchored" data-anchor-id="a-second-cleaning-pass-at-load-time">A second cleaning pass at load time</h3>
 <p>A lighter, final cleaning pass lives in the shared loader module (<code>analysis/utils.py</code>) and runs every time the data is loaded, so the modeling never re-implements cleaning. The employment loader keeps only positive wages, drops records missing sex or state, maps the detailed industry codes into broad sectors, and discards anything outside those sectors. A shared base loader removes duplicate records by ID, and the location loader parses a clean two-letter state code from the city field. Centralizing the final cleaning here means every exploratory chart and every model sees the same cleaned population.</p>
 </section>
+</section>
+<section id="connecting-the-two-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="connecting-the-two-datasets">Connecting the Two Datasets</h2>
+<p>Because IPUMS describes individual workers and Lightcast describes job postings, the two share no common records. There is no person-to-posting key linking them, so they are joined only at the level where they genuinely overlap, which is geography. Each dataset is aggregated to the state level (workforce summaries from IPUMS, posting volume and demand from Lightcast) and merged on state, so the cross-dataset analysis is presented per state rather than per individual. Both datasets cover 2024, so they describe the same period.</p>
+<p>A finer join on occupation or industry is not possible as the data stands, because the two use different classification systems. IPUMS codes occupation and industry with the Census OCC and IND schemes, while Lightcast uses the federal SOC and NAICS schemes. Translating between them would require an external crosswalk that is not part of this data, and any such mapping would introduce its own approximation, whereas the state-level join is exact and needs no translation. This constraint is the reason the geographic comparisons stop at the state grain.</p>
 </section>
 <section id="processed-tables" class="level2">
 <h2 class="anchored" data-anchor-id="processed-tables">Processed Tables</h2>
