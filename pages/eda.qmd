@@ -357,3 +357,74 @@ The chart shows employment rates by age group and gender. Employment rates incre
 ![](../assets/figures/income_gender_boxplot.png)
 
 The box plot compares income distributions between male and female workers. Male workers generally have a higher median income and a wider overall income range than female workers. The larger spread among males indicates greater variation in earnings, including a higher concentration of high-income earners. Female workers show a more compact income distribution, with lower median earnings and fewer extreme values. These findings suggest that gender-based income disparities continue to exist, with males earning more on average and being more represented among the highest-income individuals.
+
+
+## Zhiyang: Industry and Household Distribution
+
+This section explores the distribution of job postings across industries and the geographic distribution of household records. By comparing labor market demand and household concentration, we can better understand both economic activity and demographic coverage in the dataset.
+
+### Top 10 Industries by Job Postings
+
+This plot examines which industries have the highest number of job postings in the Lightcast dataset. It helps identify the sectors with the strongest hiring demand and provides insight into labor market concentration.
+
+```{python}
+import pandas as pd
+import plotly.express as px
+
+industry = pd.read_csv("../data/processed/lightcast_industry_clean.csv")
+
+top_industries = industry["NAICS_2022_6_NAME"].value_counts().head(10)
+
+top_industries_df = top_industries.reset_index()
+top_industries_df.columns = ["Industry", "Count"]
+
+fig = px.bar(
+    top_industries_df,
+    x="Count",
+    y="Industry",
+    orientation="h",
+    title="Top 10 Industries by Job Postings"
+)
+
+fig.update_layout(
+    yaxis=dict(categoryorder="total ascending"),
+    height=700
+)
+
+fig.show()
+```
+
+The results show that job postings are concentrated in a relatively small number of industries. Unclassified sectors and technology-related services account for the largest share, highlighting the dominance of digital and business service roles in the current labor market.
+
+---
+
+### Top 10 States by Household Count
+
+This plot explores the distribution of household records by state in the IPUMS dataset. It provides a geographic perspective on data coverage and shows which regions contribute the largest number of observations.
+
+```{python}
+household = pd.read_csv("../data/processed/household_clean.csv")
+
+top_states = household["STATE_NAME"].value_counts().head(10)
+
+top_states_df = top_states.reset_index()
+top_states_df.columns = ["State", "Count"]
+
+fig = px.bar(
+    top_states_df,
+    x="Count",
+    y="State",
+    orientation="h",
+    title="Top 10 States by Household Count"
+)
+
+fig.update_layout(
+    yaxis=dict(categoryorder="total ascending"),
+    height=700
+)
+
+fig.show()
+```
+
+The chart indicates that household records are heavily concentrated in a few states, suggesting uneven regional representation. This pattern may influence later analyses involving employment, wages, and demographic segmentation.
+
