@@ -4,7 +4,18 @@ title: "Data Preparation"
 
 ## Overview
 
-This section documents the ETL pipeline used to extract, clean, and structure the raw Lightcast job postings dataset for analysis.
+This section documents how the project's two raw datasets are extracted, cleaned, and structured into analysis-ready tables.
+
+### Data Sources
+
+The project combines two complementary datasets, both covering 2024: one describes the actual workforce and one describes employer demand.
+
+| Dataset | Source | What it is | Scale |
+|---|---|---|---|
+| IPUMS USA | U.S. Census American Community Survey (ACS) Public Use Microdata Sample, 2024 | Individual-level survey microdata on people: demographics, employment, occupation, industry, and wages | About 3.2M person records, narrowing to about 1.57M employed with valid wages |
+| Lightcast | Lightcast job-postings database, 2024 | Online IT job postings: title, location, salary range, skills, education, and experience | About 72K postings in the core table, expanding to millions of posting-skill records |
+
+The IPUMS data is the supply side, covering who is in the workforce and what they earn, and it underpins the clustering, gender classification, and wage-gap regression. The Lightcast data is the demand side, covering what employers advertise for, and it supplies the job-market context.
 
 ## ETL Pipeline
 
@@ -46,6 +57,12 @@ From these tables a single analysis-ready slice, `employed_only`, is built for t
 ### A second cleaning pass at load time
 
 A lighter, final cleaning pass lives in the shared loader module (`analysis/utils.py`) and runs every time the data is loaded, so the modeling never re-implements cleaning. The employment loader keeps only positive wages, drops records missing sex or state, maps the detailed industry codes into broad sectors, and discards anything outside those sectors. A shared base loader removes duplicate records by ID, and the location loader parses a clean two-letter state code from the city field. Centralizing the final cleaning here means every exploratory chart and every model sees the same cleaned population.
+
+## Connecting the Two Datasets
+
+Because IPUMS describes individual workers and Lightcast describes job postings, the two share no common records. There is no person-to-posting key linking them, so they are joined only at the level where they genuinely overlap, which is geography. Each dataset is aggregated to the state level (workforce summaries from IPUMS, posting volume and demand from Lightcast) and merged on state, so the cross-dataset analysis is presented per state rather than per individual. Both datasets cover 2024, so they describe the same period.
+
+A finer join on occupation or industry is not possible as the data stands, because the two use different classification systems. IPUMS codes occupation and industry with the Census OCC and IND schemes, while Lightcast uses the federal SOC and NAICS schemes. Translating between them would require an external crosswalk that is not part of this data, and any such mapping would introduce its own approximation, whereas the state-level join is exact and needs no translation. This constraint is the reason the geographic comparisons stop at the state grain.
 
 ## Processed Tables
 
