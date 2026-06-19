@@ -46,6 +46,108 @@ The IPUMS workforce data arrives as one wide, flat file in which every row is a 
 | `employment` | `SERIAL`, `PERNUM` | Labor-market facts: employment status, occupation, industry, wage |
 | `employed_only` | `SERIAL`, `PERNUM` | Analysis-ready slice: employed people with a valid wage |
 
+### IPUMS Entity Relationship Diagram (ERD)
+
+The original IPUMS extract is received as a single denormalized file containing household, demographic, and employment information. During the transformation stage, the data is normalized into household, person, and employment tables, with separate lookup tables for occupation and industry codes. An additional derived table, `employed_only`, is created specifically for workforce analytics and machine learning models.
+
+```{mermaid}
+erDiagram
+
+    HOUSEHOLD {
+        int SERIAL PK
+        int STATEFIP FK
+        int GQ
+        float HHWT
+        string STATE_NAME
+    }
+
+    PERSON {
+        int SERIAL FK
+        int PERNUM PK
+        int SEX FK
+        int AGE
+        int RACE FK
+        int RACED
+        float PERWT
+        string SEX_LABEL
+        string RACE_LABEL
+    }
+
+    EMPLOYMENT {
+        int SERIAL FK
+        int PERNUM FK
+        int EMPSTAT FK
+        int EMPSTATD
+        int OCC FK
+        int IND FK
+        float INCWAGE
+        string EMPSTAT_LABEL
+    }
+
+    EMPLOYED_ONLY {
+        int SERIAL FK
+        int PERNUM FK
+        int SEX FK
+        int AGE
+        int RACE FK
+        int STATEFIP FK
+        int OCC FK
+        int IND FK
+        float INCWAGE
+        float PERWT
+        string SEX_LABEL
+        string RACE_LABEL
+        string STATE_NAME
+    }
+
+    OCCUPATION_CODES {
+        int OCC PK
+    }
+
+    INDUSTRY_CODES {
+        int IND PK
+    }
+
+    SEX_LOOKUP {
+        int SEX PK
+        string SEX_LABEL
+    }
+
+    RACE_LOOKUP {
+        int RACE PK
+        string RACE_LABEL
+    }
+
+    EMPSTAT_LOOKUP {
+        int EMPSTAT PK
+        string EMPSTAT_LABEL
+    }
+
+    STATE_LOOKUP {
+        int STATEFIP PK
+        string STATE_NAME
+    }
+
+    HOUSEHOLD ||--o{ PERSON : "SERIAL"
+
+    PERSON ||--o{ EMPLOYMENT : "SERIAL + PERNUM"
+
+    HOUSEHOLD }o--|| STATE_LOOKUP : "STATEFIP"
+
+    PERSON }o--|| SEX_LOOKUP : "SEX"
+    PERSON }o--|| RACE_LOOKUP : "RACE"
+
+    EMPLOYMENT }o--|| EMPSTAT_LOOKUP : "EMPSTAT"
+    EMPLOYMENT }o--|| OCCUPATION_CODES : "OCC"
+    EMPLOYMENT }o--|| INDUSTRY_CODES : "IND"
+
+    EMPLOYED_ONLY }o--|| STATE_LOOKUP : "STATEFIP"
+    EMPLOYED_ONLY }o--|| SEX_LOOKUP : "SEX"
+    EMPLOYED_ONLY }o--|| RACE_LOOKUP : "RACE"
+    EMPLOYED_ONLY }o--|| OCCUPATION_CODES : "OCC"
+    EMPLOYED_ONLY }o--|| INDUSTRY_CODES : "IND"
+```
+
 ### Cleaning during restructuring
 
 Two cleaning decisions are applied before any table is written. The wage field uses the IPUMS sentinel value 999999 to mean "not applicable," so those entries are recoded to missing rather than treated as real income. The sample is then restricted to people living in households (group-quarters codes 1 and 2), which removes institutional populations such as dormitories and prisons whose labor-market behavior is not comparable to the general workforce. Numeric codes for sex, race, state, and employment status are mapped to readable labels so every downstream chart and table is self-explaining.
