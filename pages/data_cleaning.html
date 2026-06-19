@@ -23,6 +23,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -70,6 +105,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
 </head>
@@ -140,6 +178,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#structuring-cleaning-the-ipums-data" id="toc-structuring-cleaning-the-ipums-data" class="nav-link" data-scroll-target="#structuring-cleaning-the-ipums-data">Structuring &amp; Cleaning the IPUMS Data</a>
   <ul class="collapse">
   <li><a href="#relational-schema" id="toc-relational-schema" class="nav-link" data-scroll-target="#relational-schema">Relational schema</a></li>
+  <li><a href="#ipums-entity-relationship-diagram-erd" id="toc-ipums-entity-relationship-diagram-erd" class="nav-link" data-scroll-target="#ipums-entity-relationship-diagram-erd">IPUMS Entity Relationship Diagram (ERD)</a></li>
   <li><a href="#cleaning-during-restructuring" id="toc-cleaning-during-restructuring" class="nav-link" data-scroll-target="#cleaning-during-restructuring">Cleaning during restructuring</a></li>
   <li><a href="#the-analysis-table-employed_only" id="toc-the-analysis-table-employed_only" class="nav-link" data-scroll-target="#the-analysis-table-employed_only">The analysis table: employed_only</a></li>
   <li><a href="#a-second-cleaning-pass-at-load-time" id="toc-a-second-cleaning-pass-at-load-time" class="nav-link" data-scroll-target="#a-second-cleaning-pass-at-load-time">A second cleaning pass at load time</a></li>
@@ -299,6 +338,214 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 </tbody>
 </table>
+</section>
+<section id="ipums-entity-relationship-diagram-erd" class="level3">
+<h3 class="anchored" data-anchor-id="ipums-entity-relationship-diagram-erd">IPUMS Entity Relationship Diagram (ERD)</h3>
+<p>The original IPUMS extract is received as a single denormalized file containing household, demographic, and employment information. During the transformation stage, the data is normalized into household, person, and employment tables, with separate lookup tables for occupation and industry codes. An additional derived table, <code>employed_only</code>, is created specifically for workforce analytics and machine learning models.</p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>erDiagram</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    HOUSEHOLD {</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        int SERIAL PK</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        int STATEFIP FK</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        int GQ</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        float HHWT</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        string STATE_NAME</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    PERSON {</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        int SERIAL FK</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        int PERNUM PK</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        int SEX FK</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        int AGE</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        int RACE FK</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        int RACED</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        float PERWT</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        string SEX_LABEL</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        string RACE_LABEL</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    EMPLOYMENT {</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        int SERIAL FK</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        int PERNUM FK</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        int EMPSTAT FK</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        int EMPSTATD</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        int OCC FK</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        int IND FK</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        float INCWAGE</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        string EMPSTAT_LABEL</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    EMPLOYED_ONLY {</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        int SERIAL FK</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        int PERNUM FK</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        int SEX FK</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        int AGE</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        int RACE FK</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        int STATEFIP FK</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>        int OCC FK</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        int IND FK</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>        float INCWAGE</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>        float PERWT</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>        string SEX_LABEL</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>        string RACE_LABEL</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>        string STATE_NAME</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>    OCCUPATION_CODES {</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>        int OCC PK</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    INDUSTRY_CODES {</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>        int IND PK</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>    SEX_LOOKUP {</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>        int SEX PK</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>        string SEX_LABEL</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>    RACE_LOOKUP {</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>        int RACE PK</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>        string RACE_LABEL</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>    EMPSTAT_LOOKUP {</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>        int EMPSTAT PK</span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>        string EMPSTAT_LABEL</span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>    STATE_LOOKUP {</span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>        int STATEFIP PK</span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>        string STATE_NAME</span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>    HOUSEHOLD ||--o{ PERSON : "SERIAL"</span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>    PERSON ||--o{ EMPLOYMENT : "SERIAL + PERNUM"</span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a>    HOUSEHOLD }o--|| STATE_LOOKUP : "STATEFIP"</span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>    PERSON }o--|| SEX_LOOKUP : "SEX"</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>    PERSON }o--|| RACE_LOOKUP : "RACE"</span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a>    EMPLOYMENT }o--|| EMPSTAT_LOOKUP : "EMPSTAT"</span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a>    EMPLOYMENT }o--|| OCCUPATION_CODES : "OCC"</span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>    EMPLOYMENT }o--|| INDUSTRY_CODES : "IND"</span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a>    EMPLOYED_ONLY }o--|| STATE_LOOKUP : "STATEFIP"</span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a>    EMPLOYED_ONLY }o--|| SEX_LOOKUP : "SEX"</span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a>    EMPLOYED_ONLY }o--|| RACE_LOOKUP : "RACE"</span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a>    EMPLOYED_ONLY }o--|| OCCUPATION_CODES : "OCC"</span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a>    EMPLOYED_ONLY }o--|| INDUSTRY_CODES : "IND"</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">erDiagram
+
+    HOUSEHOLD {
+        int SERIAL PK
+        int STATEFIP FK
+        int GQ
+        float HHWT
+        string STATE_NAME
+    }
+
+    PERSON {
+        int SERIAL FK
+        int PERNUM PK
+        int SEX FK
+        int AGE
+        int RACE FK
+        int RACED
+        float PERWT
+        string SEX_LABEL
+        string RACE_LABEL
+    }
+
+    EMPLOYMENT {
+        int SERIAL FK
+        int PERNUM FK
+        int EMPSTAT FK
+        int EMPSTATD
+        int OCC FK
+        int IND FK
+        float INCWAGE
+        string EMPSTAT_LABEL
+    }
+
+    EMPLOYED_ONLY {
+        int SERIAL FK
+        int PERNUM FK
+        int SEX FK
+        int AGE
+        int RACE FK
+        int STATEFIP FK
+        int OCC FK
+        int IND FK
+        float INCWAGE
+        float PERWT
+        string SEX_LABEL
+        string RACE_LABEL
+        string STATE_NAME
+    }
+
+    OCCUPATION_CODES {
+        int OCC PK
+    }
+
+    INDUSTRY_CODES {
+        int IND PK
+    }
+
+    SEX_LOOKUP {
+        int SEX PK
+        string SEX_LABEL
+    }
+
+    RACE_LOOKUP {
+        int RACE PK
+        string RACE_LABEL
+    }
+
+    EMPSTAT_LOOKUP {
+        int EMPSTAT PK
+        string EMPSTAT_LABEL
+    }
+
+    STATE_LOOKUP {
+        int STATEFIP PK
+        string STATE_NAME
+    }
+
+    HOUSEHOLD ||--o{ PERSON : "SERIAL"
+
+    PERSON ||--o{ EMPLOYMENT : "SERIAL + PERNUM"
+
+    HOUSEHOLD }o--|| STATE_LOOKUP : "STATEFIP"
+
+    PERSON }o--|| SEX_LOOKUP : "SEX"
+    PERSON }o--|| RACE_LOOKUP : "RACE"
+
+    EMPLOYMENT }o--|| EMPSTAT_LOOKUP : "EMPSTAT"
+    EMPLOYMENT }o--|| OCCUPATION_CODES : "OCC"
+    EMPLOYMENT }o--|| INDUSTRY_CODES : "IND"
+
+    EMPLOYED_ONLY }o--|| STATE_LOOKUP : "STATEFIP"
+    EMPLOYED_ONLY }o--|| SEX_LOOKUP : "SEX"
+    EMPLOYED_ONLY }o--|| RACE_LOOKUP : "RACE"
+    EMPLOYED_ONLY }o--|| OCCUPATION_CODES : "OCC"
+    EMPLOYED_ONLY }o--|| INDUSTRY_CODES : "IND"
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
 </section>
 <section id="cleaning-during-restructuring" class="level3">
 <h3 class="anchored" data-anchor-id="cleaning-during-restructuring">Cleaning during restructuring</h3>
