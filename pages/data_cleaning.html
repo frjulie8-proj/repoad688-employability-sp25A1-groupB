@@ -314,7 +314,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="a-second-cleaning-pass-at-load-time" class="level3">
 <h3 class="anchored" data-anchor-id="a-second-cleaning-pass-at-load-time">A second cleaning pass at load time</h3>
-<p>A lighter, final cleaning pass lives in the shared loader module (<code>analysis/utils.py</code>) and runs every time the data is loaded, so the modeling never re-implements cleaning. The employment loader keeps only positive wages, drops records missing sex or state, maps the detailed industry codes into broad sectors, and discards anything outside those sectors. A shared base loader removes duplicate records by ID, and the location loader parses a clean two-letter state code from the city field. Centralizing the final cleaning here means every exploratory chart and every model sees the same cleaned population.</p>
+<p>A lighter, final cleaning pass lives in the shared loader module (<code>analysis/utils.py</code>) and runs every time the data is loaded, so the modeling never re-implements cleaning. The employment loader keeps only positive wages, drops records missing sex or state, maps the detailed industry codes into broad sectors, and discards anything outside those sectors. A shared base loader removes duplicate records by ID, and the location loader parses a clean two-letter state code from the metropolitan-area name field (MSA_NAME_INCOMING). Centralizing the final cleaning here means every exploratory chart and every model sees the same cleaned population.</p>
 </section>
 </section>
 <section id="connecting-the-two-datasets" class="level2">
