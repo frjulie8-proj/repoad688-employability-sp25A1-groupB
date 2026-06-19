@@ -327,7 +327,7 @@ While the K-Means segmentation above shows *where* in the wage distribution the 
 
 ### Methodology Note
 
-Two linear regression models were fit on the full IPUMS `employed_only` dataset (1.49M workers with positive wages): a baseline model using `AGE`, `RACE`, and `STATE_NAME`, and a full model that adds broad `OCCUPATION` and `INDUSTRY` group codes. Comparing the coefficient on `SEX` between the two models isolates how much of the gap is explained by which jobs men and women hold, versus how much persists within the same occupation and industry. A Random Forest Regressor (100 trees, max depth 10, trained on a 200,000-row sample for computational efficiency) was then used to rank feature importance across all 167 encoded features, confirming whether gender remains a top predictor even in a model that makes no assumptions about a constant linear effect. Full code is available in `analysis/ml_wage_gap_antara.ipynb`. This analysis uses only the IPUMS employment data, since Lightcast records advertised job postings rather than individual worker outcomes, making it unsuitable for a wage regression on actual earners; the cross-dataset connection between job market demand and wages is explored separately in the K-Means analysis above.
+Two linear regression models were fit on the full IPUMS `employed_only` dataset (1.49M workers with positive wages): a baseline model using `AGE`, `RACE`, and `STATE_NAME`, and a full model that adds broad `OCCUPATION` and `INDUSTRY` group codes. Comparing the coefficient on `SEX` between the two models isolates how much of the gap is explained by which jobs men and women hold, versus how much persists within the same occupation and industry. A Random Forest Regressor (100 trees, max depth 10, trained on a 200,000-row sample for computational efficiency) was then used to rank feature importance across all 167 encoded features, confirming whether gender remains a top predictor even in a model that makes no assumptions about a constant linear effect. Full code is available in analysis/ml_wage_gap_antara.ipynb and analysis/ml_rf_antara.py. This analysis uses only the IPUMS employment data, since Lightcast records advertised job postings rather than individual worker outcomes, making it unsuitable for a wage regression on actual earners; the cross-dataset connection between job market demand and wages is explored separately in the K-Means analysis above.
 
 ```{python}
 #| code-fold: true
@@ -376,7 +376,7 @@ The raw gender gap, controlling only for age, race, and state, is \$`{python} f"
 
 ```{python}
 #| code-fold: true
-#| fig-cap: "Top 15 features by Random Forest importance. Gender ranks third overall, ahead of every individual state, race category, and most occupation and industry groups."
+#| fig-cap: "Top 15 features by Random Forest importance. Gender ranks fourth overall, ahead of every individual state, race category, and most occupation and industry groups."
 
 # OCC group labels derived from IPUMS USA 2018 Census occupation coding scheme
 # Source: https://usa.ipums.org/usa/volii/occ2018.shtml
@@ -387,15 +387,23 @@ occ_lookup = dict(zip(occ_labels['OCC_GROUP'], occ_labels['MAJOR_GROUP']))
 def clean_feature_label(f):
     if f == 'AGE':
         return 'Age'
-    elif f == 'SEX_LABEL_Male':
-        return 'Gender (Male)'
+    elif f in ['SEX_LABEL_Male', 'SEX_LABEL_ohe_0', 'SEX_LABEL_ohe_1']:
+        return 'Gender'
+    elif f.startswith('OCC_GROUP_ohe_'):
+        return f"Occupation Group {f.replace('OCC_GROUP_ohe_', '')}"
     elif f.startswith('OCC_GROUP_'):
         grp = int(f.replace('OCC_GROUP_', ''))
         return f"Occupation: {occ_lookup.get(grp, f)}"
+    elif f.startswith('IND_GROUP_ohe_'):
+        return f"Industry Group {f.replace('IND_GROUP_ohe_', '')}"
     elif f.startswith('IND_GROUP_'):
         return f"Industry Group {f.replace('IND_GROUP_', '')}"
+    elif f.startswith('STATE_NAME_ohe_'):
+        return f"State Feature {f.replace('STATE_NAME_ohe_', '')}"
     elif f.startswith('STATE_NAME_'):
         return f"State: {f.replace('STATE_NAME_', '')}"
+    elif f.startswith('RACE_LABEL_ohe_'):
+        return f"Race Feature {f.replace('RACE_LABEL_ohe_', '')}"
     elif f.startswith('RACE_LABEL_'):
         return f"Race: {f.replace('RACE_LABEL_', '')}"
     else:
@@ -419,7 +427,7 @@ for _, row in top15.iterrows():
         line=dict(color='#d7191c' if row['is_gender'] else '#cccccc', width=2),
     )
 fig_lollipop.update_layout(
-    title='Random Forest Feature Importance (Top 15 of 167 features)',
+    title='PySpark Random Forest Feature Importance (Top 15 of 172 features)',
     xaxis_title='Importance',
     yaxis_title='',
     yaxis=dict(categoryorder='total ascending'),
@@ -428,7 +436,7 @@ apply_theme(fig_lollipop)
 fig_lollipop.show()
 ```
 
-Gender ranks **#3 of 167 features** in the Random Forest model — behind only age and the largest occupation group, and ahead of every individual state, race category, and most occupation and industry codes. This is a non-linear, assumption-free model confirming the same conclusion as the regression: gender is one of the strongest predictors of wage in this dataset, on par with or stronger than most job-related factors.
+Gender ranks **#4 of 172 features** in the Random Forest model — behind only age and the largest occupation group, and ahead of every individual state, race category, and most occupation and industry codes. This is a non-linear, assumption-free model confirming the same conclusion as the regression: gender is one of the strongest predictors of wage in this dataset, on par with or stronger than most job-related factors.
 
 ### How does the gap evolve across a career?
 
