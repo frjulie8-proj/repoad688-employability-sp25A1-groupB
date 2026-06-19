@@ -403,7 +403,7 @@ The results show that job postings are concentrated in a relatively small number
 This plot explores the distribution of household records by state in the IPUMS dataset. It provides a geographic perspective on data coverage and shows which regions contribute the largest number of observations.
 
 ```{python}
-household = pd.read_csv("../data/processed/employed_only.csv")
+household = pd.read_parquet("../data/processed/employed_only.parquet")
 
 top_states = household["STATE_NAME"].value_counts().head(10)
 
