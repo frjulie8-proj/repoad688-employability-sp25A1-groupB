@@ -69,7 +69,7 @@ fig.update_layout(
     xaxis_title="Skill",
     yaxis_title="Team Member"
 )
-fig.write_image("assets/figures/skill_heatmap.png", width=1100, height=500, scale=2)
+#fig.write_image("../assets/figures/skill_heatmap.png", width=1100, height=500, scale=2)
 fig.show()
 ```
 
@@ -129,7 +129,7 @@ fig2.update_layout(
     title_font=PLOTLY_THEME["title_font"],
     template=PLOTLY_THEME["template"]
 )
-fig2.write_image("assets/figures/skill_gap_bar.png", width=1100, height=550, scale=2)
+#fig2.write_image("../assets/figures/skill_gap_bar.png", width=1100, height=550, scale=2)
 fig2.show()
 ```
 
@@ -143,7 +143,7 @@ fig2.show()
 |---|---|---|
 | Antara | Machine Learning, Statistics | Coursera ML, Khan Academy Stats |
 | Julie | Machine Learning, AWS | fast.ai, AWS Training |
-| Yifan | TBD | TBD |
+| Yifan | Machine Learning, Statistics | Coursera ML, Khan Academy Statistics |
 | Zhiyang | AWS, Statistics | AWS Training |
 | Alina | Machine Learning, Advanced SQL | Coursera ML, Mode SQL Tutorial |
 
@@ -151,6 +151,6 @@ fig2.show()
 
 - **Antara** leads: Data Cleaning, SQL, Business Analytics, Excel
 - **Julie** leads: Data Visualization, EDA
-- **Yifan** leads: TBD
+- **Yifan** leads: ETL Pipeline, Spark Processing, GitHub Collaboration
 - **Zhiyang** leads: AWS Related, BA
 - **Alina** leads: Skill Gap Analysis, Career Strategy, Insights & Presentation
