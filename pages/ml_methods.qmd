@@ -384,6 +384,19 @@ The raw gender gap, controlling only for age, race, and state, is \$`{python} f"
 occ_labels = pd.read_csv(PROCESSED / "occ_group_labels.csv")
 occ_lookup = dict(zip(occ_labels['OCC_GROUP'], occ_labels['MAJOR_GROUP']))
 
+ind_lookup = {
+    0: "N/A or not reported",
+    1000: "Agriculture, forestry, fishing, and mining",
+    2000: "Construction",
+    3000: "Manufacturing",
+    4000: "Wholesale and retail trade",
+    5000: "Transportation, warehousing, and utilities",
+    6000: "Information and financial activities",
+    7000: "Professional and business services",
+    8000: "Education, health, and social services",
+    9000: "Public administration and other services",
+}
+
 def clean_feature_label(f):
     if f == 'AGE':
         return 'Age'
@@ -397,7 +410,8 @@ def clean_feature_label(f):
     elif f.startswith('IND_GROUP_ohe_'):
         return f"Industry Group {f.replace('IND_GROUP_ohe_', '')}"
     elif f.startswith('IND_GROUP_'):
-        return f"Industry Group {f.replace('IND_GROUP_', '')}"
+        grp = int(f.replace('IND_GROUP_', ''))
+        return f"Industry: {ind_lookup.get(grp, f)}"
     elif f.startswith('STATE_NAME_ohe_'):
         return f"State Feature {f.replace('STATE_NAME_ohe_', '')}"
     elif f.startswith('STATE_NAME_'):
@@ -411,6 +425,14 @@ def clean_feature_label(f):
 
 top15 = rf_imp.head(15).copy()
 top15['label'] = top15['feature'].apply(clean_feature_label)
+
+top15 = (
+    top15
+    .groupby(["label", "is_gender"], as_index=False)["importance"]
+    .sum()
+    .sort_values("importance", ascending=False)
+    .head(15)
+)
 
 fig_lollipop = go.Figure()
 fig_lollipop.add_trace(go.Scatter(

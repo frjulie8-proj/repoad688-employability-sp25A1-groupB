@@ -1,4 +1,8 @@
 metric,value
-Train R²,0.2398668917496355
-Test R²,0.21006696944052872
-Sample Size,200000.0
+Train R²,0.27034707323978147
+Test R²,0.23565791550167936
+Sample Size,200517.0
+Num Trees,100.0
+Max Depth,10.0
+Default Parallelism,2.0
+Shuffle Partitions,8.0

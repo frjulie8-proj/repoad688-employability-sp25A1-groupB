@@ -371,7 +371,7 @@ This plot examines which industries have the highest number of job postings in t
 import pandas as pd
 import plotly.express as px
 
-industry = pd.read_csv("../data/processed/lightcast_industry_clean.csv")
+industry = pd.read_csv("../data/processed/lightcast_industry.csv")
 
 top_industries = industry["NAICS_2022_6_NAME"].value_counts().head(10)
 
@@ -403,7 +403,7 @@ The results show that job postings are concentrated in a relatively small number
 This plot explores the distribution of household records by state in the IPUMS dataset. It provides a geographic perspective on data coverage and shows which regions contribute the largest number of observations.
 
 ```{python}
-household = pd.read_csv("../data/processed/household_clean.csv")
+household = pd.read_csv("../data/processed/employed_only.csv")
 
 top_states = household["STATE_NAME"].value_counts().head(10)
 
