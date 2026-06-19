@@ -12,8 +12,6 @@ website:
   title: "Job Market Analysis 2024"
   navbar:
     left:
-      - href: index.qmd
-        text: "Home"
       - href: pages/introduction.qmd
         text: "Project Overview"
       - href: pages/data_cleaning.qmd

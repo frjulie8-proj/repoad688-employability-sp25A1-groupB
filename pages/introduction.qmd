@@ -29,4 +29,25 @@ title: Project Overview
 | 1 | Repo setup, ETL pipeline, site initialized | Done |
 | 2 | Data extraction, relational table build | Done |
 | 3 | EDA, skill gap analysis, site restructure | Done |
-| 4 | ML methods — clustering, classification, regression, evaluation | Done |
+| 4 | ML methods: clustering, classification, regression, evaluation | Done |
+
+## Key Findings: Answering the Research Questions
+
+After completing the exploratory analysis and the machine-learning models (clustering, gender classification, and wage-gap regression), five conclusions emerge.
+
+**1. A large gender pay gap exists, and most of it is not explained by which jobs people hold.** The regression finds a raw gap of about $24,700 per year, and adding occupation and industry explains only 9.4 percent of it, leaving roughly 91 percent that persists for men and women in the same broad jobs. This points to factors beyond job choice, consistent with Blau and Kahn (2017), who find a large unexplained component and conclude that discrimination cannot be ruled out.
+
+**2. The disparity concentrates at the top of the wage distribution, a glass ceiling.** The K-Means segments show women are close to half of the low and mid-pay tiers but under a quarter of the elite-pay tier, so the gap is widest at the top. This matches Arulampalam, Booth and Bryan (2007), who show gender pay gaps are typically larger at the top of the distribution.
+
+**3. Gender is structurally embedded in the labor market.** A logistic-regression classifier recovers a worker's sex from economic profile alone at a ROC AUC of 0.83, and gender ranks third of 167 features predicting wage in the Random Forest. That separability reflects strong occupational segregation, consistent with Goldin (2014).
+
+**4. The disparity is national, not regional or demand-driven.** The state map shows the elite-tier female share well below parity in essentially every state, with employer demand and geography barely moving it and only a modest blue-versus-red difference (about 25 percent versus 22 percent). This indicates an economy-wide structural pattern rather than a local effect, in line with the structural explanations of Blau and Kahn (2017).
+
+**5. The gap widens over the career.** The Random Forest predicted-wage trajectory shows men's and women's earnings diverging from the late twenties through the prime working years, matching the child-penalty findings of Kleven, Landais and Søgaard (2019).
+
+## Supporting Literature
+
+1. Blau, F. D. and Kahn, L. M. (2017). The Gender Wage Gap: Extent, Trends, and Explanations. *Journal of Economic Literature*, 55(3), 789-865. [Link](https://www.aeaweb.org/articles?id=10.1257%2Fjel.20160995)
+2. Goldin, C. (2014). A Grand Gender Convergence: Its Last Chapter. *American Economic Review*, 104(4), 1091-1119. [Link](https://www.aeaweb.org/articles?id=10.1257%2Faer.104.4.1091)
+3. Arulampalam, W., Booth, A. L. and Bryan, M. L. (2007). Is There a Glass Ceiling over Europe? *ILR Review*, 60(2), 163-186. [Link](https://journals.sagepub.com/doi/10.1177/001979390706000201)
+4. Kleven, H., Landais, C. and Søgaard, J. E. (2019). Children and Gender Inequality: Evidence from Denmark. *American Economic Journal: Applied Economics*, 11(4), 181-209. [Link](https://www.aeaweb.org/articles?id=10.1257%2Fapp.20180010)

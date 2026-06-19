@@ -1,34 +1,10 @@
 ---
-title: "Gender Disparities in Hiring & Political Influence"
-subtitle: "A Data-Driven Analysis of the 2024 Job Market"
-author: "Group B"
-date: today
+title: "Job Market Analysis 2024"
 format: html
 ---
 
-## Overview
+```{=html}
+<meta http-equiv="refresh" content="0; url=pages/introduction.html">
+```
 
-This project examines gender based disparities in hiring patterns across
-industries and explores how political influence measured by state political
-lean (red vs. blue) shapes employment outcomes for men and women in 2024.
-
-Using the Lightcast dataset as our baseline, we apply a structured ETL
-pipeline to extract, clean, and analyze real world job market data,
-publishing our findings as an evolving research portfolio.
-
-## Research Questions
-
-1. How do hiring patterns differ for men vs. women across industries?
-2. Do gender based employment disparities vary between red and blue states?
-
-## Project Status
-
-> This site is updated weekly as analysis progresses.
-> Base DB Lightcast is not sufficent for analysis. Researching for complementary dataset
-> Check back for new findings, visualizations, and insights.
-
-| Week | Milestone |
-|------|-----------|
-| 1 | Repo setup, site initialized, ETL pipeline designed |
-| 2 | Data extraction, column selection |
-| ... | ... |
+This site opens on the [Project Overview](pages/introduction.html). If you are not redirected automatically, follow that link.
