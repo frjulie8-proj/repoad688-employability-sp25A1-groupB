@@ -1,6 +1,6 @@
 model,type,metric,value
-Gender classifier (Logistic Regression),classification,ROC_AUC,0.8025
-Gender classifier (Logistic Regression),classification,Accuracy,0.7247
-Gender classifier (Logistic Regression),classification,Precision,0.7259
-Gender classifier (Logistic Regression),classification,Recall,0.7247
-Gender classifier (Logistic Regression),classification,F1,0.7247
+Gender classifier (Logistic Regression),classification,ROC_AUC,0.8311
+Gender classifier (Logistic Regression),classification,Accuracy,0.7513
+Gender classifier (Logistic Regression),classification,Precision,0.7516
+Gender classifier (Logistic Regression),classification,Recall,0.7513
+Gender classifier (Logistic Regression),classification,F1,0.7513

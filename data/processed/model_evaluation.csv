@@ -1,11 +1,11 @@
 model,type,metric,value
 K-Means clustering,clustering,Silhouette,0.6617
 K-Means clustering,clustering,k,4.0
-Gender classifier (Logistic Regression),classification,Accuracy,0.7247
-Gender classifier (Logistic Regression),classification,F1,0.7247
-Gender classifier (Logistic Regression),classification,Precision,0.7259
-Gender classifier (Logistic Regression),classification,ROC_AUC,0.8025
-Gender classifier (Logistic Regression),classification,Recall,0.7247
+Gender classifier (Logistic Regression),classification,Accuracy,0.7513
+Gender classifier (Logistic Regression),classification,F1,0.7513
+Gender classifier (Logistic Regression),classification,Precision,0.7516
+Gender classifier (Logistic Regression),classification,ROC_AUC,0.8311
+Gender classifier (Logistic Regression),classification,Recall,0.7513
 "Linear Regression — Baseline (age, race, state)",regression,R2,0.0757
 "Linear Regression — Full (+ occupation, industry)",regression,R2,0.2585
 Random Forest Regressor,regression,R2,0.2101
