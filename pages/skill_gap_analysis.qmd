@@ -73,7 +73,6 @@ fig.write_image("assets/figures/skill_heatmap.png", width=1100, height=500, scal
 fig.show()
 ```
 
-![Team Skill Heatmap](../assets/figures/skill_heatmap.png)
 
 ---
 
