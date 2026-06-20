@@ -352,41 +352,9 @@ Within the IT career area, **Data Analysis and Mathematics** and **Business Inte
 import pandas as pd
 import plotly.express as px
 
-person_df = pd.read_csv("../data/processed/person.csv")
-employment_df = pd.read_csv("../data/processed/employment.csv")
-
-df = pd.merge(
-    person_df,
-    employment_df,
-    on=["SERIAL", "PERNUM"],
-    how="inner"
+employment_rate_age = pd.read_csv(
+    "../data/processed/employment_rate_age_gender_yifan.csv"
 )
-
-df["AGE"] = pd.to_numeric(df["AGE"], errors="coerce")
-
-df = df[
-    (df["AGE"].notna()) &
-    (df["AGE"] >= 18) &
-    (df["AGE"] <= 80) &
-    (df["SEX_LABEL"].notna()) &
-    (df["EMPSTAT_LABEL"].notna())
-].copy()
-
-df["AGE_GROUP"] = pd.cut(
-    df["AGE"],
-    bins=[17, 24, 34, 44, 54, 64, 80],
-    labels=["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]
-)
-
-df["EMPLOYED_FLAG"] = (df["EMPSTAT_LABEL"] == "Employed").astype(int)
-
-employment_rate_age = (
-    df.groupby(["AGE_GROUP", "SEX_LABEL"], observed=True)["EMPLOYED_FLAG"]
-    .mean()
-    .reset_index()
-)
-
-employment_rate_age["Employment_Rate"] = employment_rate_age["EMPLOYED_FLAG"] * 100
 
 fig = px.bar(
     employment_rate_age,
@@ -416,24 +384,9 @@ The chart shows employment rates by age group and gender. Employment rates incre
 import pandas as pd
 import plotly.express as px
 
-person_df = pd.read_csv("../data/processed/person.csv")
-employment_df = pd.read_csv("../data/processed/employment.csv")
-
-df = pd.merge(
-    person_df,
-    employment_df,
-    on=["SERIAL", "PERNUM"],
-    how="inner"
+income_df = pd.read_csv(
+    "../data/processed/income_gender_sample_yifan.csv"
 )
-
-df["INCWAGE"] = pd.to_numeric(df["INCWAGE"], errors="coerce")
-
-income_df = df[
-    (df["INCWAGE"].notna()) &
-    (df["INCWAGE"] > 0) &
-    (df["INCWAGE"] <= 300000) &
-    (df["SEX_LABEL"].notna())
-].copy()
 
 fig = px.box(
     income_df,
