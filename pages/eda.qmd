@@ -63,7 +63,7 @@ fig_a1 = px.bar(
     labels={"AVG_WAGE": "Avg Annual Wage", "INDUSTRY": "Industry"},
     **PLOTLY_THEME
 )
-save_fig(fig_a1, "julie_gender_wage_industry")
+#save_fig(fig_a1, "julie_gender_wage_industry")
 fig_a1.show()
 ```
 
@@ -86,7 +86,7 @@ fig_a2 = px.choropleth(
     title="Average Wage by State and Gender",
     **PLOTLY_THEME
 )
-save_fig(fig_a2, "julie_gender_wage_state")
+#save_fig(fig_a2, "julie_gender_wage_state")
 fig_a2.show()
 ```
 
@@ -124,7 +124,7 @@ fig_b2 = px.bar(
     labels={"STATE_CODE": "State", "POSTING_COUNT": "Postings"},
     **PLOTLY_THEME
 )
-save_fig(fig_b2, "julie_postings_by_state")
+#save_fig(fig_b2, "julie_postings_by_state")
 fig_b2.show()
 ```
 
@@ -165,7 +165,7 @@ fig_c1 = px.scatter(
     **PLOTLY_THEME
 )
 fig_c1.update_traces(marker=dict(size=8), selector=dict(mode="markers"))
-save_fig(fig_c1, "julie_cross_state_comparison")
+#save_fig(fig_c1, "julie_cross_state_comparison")
 fig_c1.show()
 ```
 
@@ -222,7 +222,7 @@ fig1.update_layout(
     yaxis_title='Percentage (%)',
     template='plotly_white'
 )
-save_fig(fig1, 'antara_gender_distribution')
+#save_fig(fig1, 'antara_gender_distribution')
 fig1.show()
 ```
 
@@ -260,7 +260,7 @@ fig2.update_layout(
     yaxis_title='Average Annual Wage ($)',
     template='plotly_white'
 )
-save_fig(fig2, 'antara_avg_wage_comparison')
+#save_fig(fig2, 'antara_avg_wage_comparison')
 fig2.show()
 ```
 
@@ -287,7 +287,7 @@ fig3 = px.box(
     color_discrete_map={'Male': '#2c7bb6', 'Female': '#d7191c'},
     **PLOTLY_THEME
 )
-save_fig(fig3, 'antara_wage_boxplot')
+#save_fig(fig3, 'antara_wage_boxplot')
 fig3.show()
 ```
 
@@ -314,7 +314,7 @@ fig4 = px.bar(
     color_continuous_scale='Blues',
     **PLOTLY_THEME
 )
-save_fig(fig4, 'antara_career_area')
+#save_fig(fig4, 'antara_career_area')
 fig4.show()
 ```
 
@@ -339,7 +339,7 @@ fig5 = px.bar(
     color_continuous_scale='Reds',
     **PLOTLY_THEME
 )
-save_fig(fig5, 'antara_occupation_group')
+#save_fig(fig5, 'antara_occupation_group')
 fig5.show()
 ```
 
