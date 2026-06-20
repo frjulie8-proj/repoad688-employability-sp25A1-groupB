@@ -12,7 +12,7 @@ This section maps individual skill gaps identified in the Skill Gap Analysis to 
 |-------------|-------------|
 | Julie | Data Analyst / Business Intelligence |
 | Yifan | TBD |
-| Zhiyang | TBD |
+| Zhiyang | Analyst |
 | Alina | TBD |
 | Antara | Data Engineer / Analytics |
 
