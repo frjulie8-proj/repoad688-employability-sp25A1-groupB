@@ -2,7 +2,7 @@
 
 ## Project: Gender Disparities in Hiring & Political Influence
 **Course:** AD688 Applied Business Analytics | Summer 2026  
-**Group:** Group B — Antara, Julie, Yifan, Zhiyang, Alina
+**Group:** Antara, Julie, Yifan, Zhiyang, Alina
 
 ---
 
