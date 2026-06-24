@@ -26,24 +26,28 @@ This project investigates gender disparities in hiring and wages across the U.S.
 
 ```
 analysis/
-├── utils.py                    Shared helpers
-├── spark_utils.py              PySpark shared helpers
-├── ml_wage_gap_antara.ipynb    Linear regression decomposition
-├── ml_rf_antara.py             PySpark Random Forest pipeline
-├── ml_kmeans_julie.py          K-Means clustering (Spark MLlib)
-└── live_demo_antara.ipynb      Live demo notebook for presentation
-etl/
-├── restructure_ipums.py        IPUMS data restructuring
-└── transform.py                Lightcast data transformation
-pages/
-├── eda.qmd                     Exploratory Data Analysis
-├── ml_methods.qmd              Predictive Modeling
-├── skill_gap_analysis.qmd      Skill Gap Analysis
-└── career_plan.qmd             Career Strategy
-data/processed/                 Processed datasets
-assets/figures/                 Saved Plotly figures
-AI_DISCLOSURE/                  AI usage disclosure
-_quarto.yml                     Quarto site configuration
+├── utils.py                      Shared pandas/Plotly helpers
+├── spark_utils.py                Shared PySpark helpers
+│
+├── ml_wage_gap_antara.ipynb      Linear regression decomposition
+├── ml_rf_antara.py               PySpark Random Forest pipeline
+├── live_demo_antara.ipynb        Live demo notebook — presentation
+│
+├── ml_kmeans_julie.ipynb         K-Means clustering notebook
+├── ml_kmeans_julie.py            K-Means Spark MLlib pipeline
+├── ml_gender_clf_julie.py        Logistic regression classifier
+├── ml_state_join_julie.py        State-level demand join
+├── ml_segment_sex_sql.py         Segment x sex Spark SQL
+├── ml_segment_stage_sex_sql.py   Segment x stage x sex Spark SQL
+├── model_eval.py                 Consolidated model evaluation
+│
+├── eda_exploration_antara.ipynb  EDA — IT vs overall workforce
+├── eda_gender.ipynb              EDA — gender analysis
+├── eda_political.ipynb           EDA — political influence
+├── eda_yifan.ipynb               EDA — Yifan analysis
+├── eda_zhiyang.ipynb             EDA — Zhiyang analysis
+├── alina_salary_analysis.py      Salary analysis
+└── industry_plot.py              Industry distribution plot
 ```
 
 ---
