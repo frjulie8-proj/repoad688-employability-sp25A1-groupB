@@ -24,25 +24,27 @@ This project investigates gender disparities in hiring and wages across the U.S.
 
 ## Repository Structure
 
-analysis/                     Notebooks and Python scripts
-  utils.py                    Shared helpers
-  spark_utils.py              PySpark shared helpers
-  ml_wage_gap_antara.ipynb    Linear regression decomposition
-  ml_rf_antara.py             PySpark Random Forest pipeline
-  ml_kmeans_julie.py          K-Means clustering (Spark MLlib)
-  live_demo_antara.ipynb      Live demo notebook for presentation
-etl/                          ETL pipelines
-  restructure_ipums.py        IPUMS data restructuring
-  transform.py                Lightcast data transformation
-pages/                        Quarto website pages
-  eda.qmd                     Exploratory Data Analysis
-  ml_methods.qmd              Predictive Modeling
-  skill_gap_analysis.qmd      Skill Gap Analysis
-  career_plan.qmd             Career Strategy
-data/processed/               Processed datasets
-assets/figures/               Saved Plotly figures
-AI_DISCLOSURE/                AI usage disclosure
-_quarto.yml                   Quarto site configuration
+```
+analysis/
+├── utils.py                    Shared helpers
+├── spark_utils.py              PySpark shared helpers
+├── ml_wage_gap_antara.ipynb    Linear regression decomposition
+├── ml_rf_antara.py             PySpark Random Forest pipeline
+├── ml_kmeans_julie.py          K-Means clustering (Spark MLlib)
+└── live_demo_antara.ipynb      Live demo notebook for presentation
+etl/
+├── restructure_ipums.py        IPUMS data restructuring
+└── transform.py                Lightcast data transformation
+pages/
+├── eda.qmd                     Exploratory Data Analysis
+├── ml_methods.qmd              Predictive Modeling
+├── skill_gap_analysis.qmd      Skill Gap Analysis
+└── career_plan.qmd             Career Strategy
+data/processed/                 Processed datasets
+assets/figures/                 Saved Plotly figures
+AI_DISCLOSURE/                  AI usage disclosure
+_quarto.yml                     Quarto site configuration
+```
 
 ---
 
