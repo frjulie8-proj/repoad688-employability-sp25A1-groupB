@@ -376,7 +376,7 @@ The raw gender gap, controlling only for age, race, and state, is \$`{python} f"
 
 ```{python}
 #| code-fold: true
-#| fig-cap: "Top 15 features by Random Forest importance. Gender ranks fourth overall, ahead of every individual state, race category, and most occupation and industry groups."
+#| fig-cap: "Top 15 features by Random Forest importance. Gender ranks 4th overall, ahead of every individual state, race category, and most occupation and industry groups."
 
 # OCC group labels derived from IPUMS USA 2018 Census occupation coding scheme
 # Source: https://usa.ipums.org/usa/volii/occ2018.shtml
@@ -400,7 +400,7 @@ ind_lookup = {
 def clean_feature_label(f):
     if f == 'AGE':
         return 'Age'
-    elif f in ['SEX_LABEL_Male', 'SEX_LABEL_ohe_0', 'SEX_LABEL_ohe_1']:
+    elif 'SEX_LABEL' in f:
         return 'Gender'
     elif f.startswith('OCC_GROUP_ohe_'):
         return f"Occupation Group {f.replace('OCC_GROUP_ohe_', '')}"
@@ -423,11 +423,11 @@ def clean_feature_label(f):
     else:
         return f
 
-top15 = rf_imp.head(15).copy()
-top15['label'] = top15['feature'].apply(clean_feature_label)
 
+top20 = rf_imp.head(20).copy()
+top20['label'] = top20['feature'].apply(clean_feature_label)
 top15 = (
-    top15
+    top20
     .groupby(["label", "is_gender"], as_index=False)["importance"]
     .sum()
     .sort_values("importance", ascending=False)
