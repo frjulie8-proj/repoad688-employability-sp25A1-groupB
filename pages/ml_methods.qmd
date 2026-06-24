@@ -376,7 +376,7 @@ The raw gender gap, controlling only for age, race, and state, is \$`{python} f"
 
 ```{python}
 #| code-fold: true
-#| fig-cap: "Top 15 features by Random Forest importance. Gender ranks 3rd overall, ahead of every individual state, race category, and most occupation and industry groups."
+#| fig-cap: "Top 15 features by Random Forest importance. Gender ranks 4th overall, ahead of every individual state, race category, and most occupation and industry groups."
 
 # OCC group labels derived from IPUMS USA 2018 Census occupation coding scheme
 # Source: https://usa.ipums.org/usa/volii/occ2018.shtml
@@ -458,7 +458,7 @@ apply_theme(fig_lollipop)
 fig_lollipop.show()
 ```
 
-Gender ranks **#3 of 172 features** in the Random Forest model — behind only age and the largest occupation group, and ahead of every individual state, race category, and most occupation and industry codes. This is a non-linear, assumption-free model confirming the same conclusion as the regression: gender is one of the strongest predictors of wage in this dataset, on par with or stronger than most job-related factors.
+Gender ranks **#4 of 172 features** in the Random Forest model — behind only age and the largest occupation group, and ahead of every individual state, race category, and most occupation and industry codes. This is a non-linear, assumption-free model confirming the same conclusion as the regression: gender is one of the strongest predictors of wage in this dataset, on par with or stronger than most job-related factors.
 
 ### How does the gap evolve across a career?
 
