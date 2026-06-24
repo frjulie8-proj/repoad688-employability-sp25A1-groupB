@@ -1,7 +1,7 @@
 # AI Disclosure
 
 ## Project: Gender Disparities in Hiring & Political Influence
-**Course:** AD688 Applied Business Analytics | Summer 2026  
+**Course:** AD688 Cloud Data Analytics | Summer 2026  
 **Group:** Antara, Julie, Yifan, Zhiyang, Alina
 
 ---
