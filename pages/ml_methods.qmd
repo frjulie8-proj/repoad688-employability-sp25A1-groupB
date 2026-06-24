@@ -400,7 +400,7 @@ ind_lookup = {
 def clean_feature_label(f):
     if f == 'AGE':
         return 'Age'
-    elif f in ['SEX_LABEL_Male', 'SEX_LABEL_ohe_0', 'SEX_LABEL_ohe_1']:
+    elif 'SEX_LABEL' in f:
         return 'Gender'
     elif f.startswith('OCC_GROUP_ohe_'):
         return f"Occupation Group {f.replace('OCC_GROUP_ohe_', '')}"
