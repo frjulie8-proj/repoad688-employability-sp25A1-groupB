@@ -1,0 +1,318 @@
+---
+title: "Gender Disparities in Hiring and Political Influence"
+subtitle: "Final Report — AD688 Applied Business Analytics | Summer 2026"
+author:
+  - name: Antara Sudhir
+    affiliations:
+      - ref: bu
+  - name: Julie Ngo Tran
+    affiliations:
+      - ref: bu
+  - name: Yifan Cui
+    affiliations:
+      - ref: bu
+  - name: Zhiyang Guo
+    affiliations:
+      - ref: bu
+  - name: Alina Chen
+    affiliations:
+      - ref: bu
+affiliations:
+  - id: bu
+    name: Boston University Metropolitan College
+    city: Boston
+    state: MA
+date: today
+date-modified: today
+date-format: long
+format:
+  docx:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+execute:
+  echo: false
+  eval: false
+  warning: false
+---
+*The interactive version of this report, with live charts and code, is available at:*
+*https://frjulie8-proj.github.io/repoad688-employability-sum26-groupB/*
+
+# Introduction
+
+## Research Questions
+
+This project investigates gender disparities in hiring and wages across the U.S. labor market. Four research questions guide the analysis:
+
+1. How much of the gender wage gap can be explained by occupation and industry?
+2. Does gender remain important after accounting for other factors?
+3. Where are women underrepresented in the workforce?
+4. Does political geography influence the wage disparity?
+
+## Datasets
+
+The analysis combines two complementary 2024 datasets. The primary dataset is the IPUMS USA 2024 American Community Survey (ACS), a nationally representative individual-level survey covering approximately 3.2 million person records, of which 1.57 million are employed individuals with valid wages. This dataset provides the supply side of the labor market — who is in the workforce and what they earn — and underpins the clustering, gender classification, and wage-gap regression models. The secondary dataset is the Lightcast 2024 job postings database, containing approximately 72,000 IT-focused job postings with information on salary, skills, occupation, industry, and location. This dataset provides the demand side — what employers advertise for — and supports the skill gap analysis and cross-dataset geographic comparison.
+
+Because IPUMS describes individual workers and Lightcast describes job postings, they share no common record-level key. The two datasets are joined at the state level, the one geographic dimension both share, so cross-dataset analyses are presented per state rather than per individual.
+
+## Team Contributions
+
+| Team Member | Primary Contributions |
+|---|---|
+| Antara Sudhir | EDA (IT vs. overall workforce), linear regression decomposition, PySpark Random Forest, live demo |
+| Julie Ngo Tran | K-Means clustering, logistic regression classifier, state-level demand join, EDA (gender & wages) |
+| Yifan Cui | ETL pipeline, EDA (employment rate and income by age/gender) |
+| Zhiyang Guo | EDA (industry and household distribution) |
+| Alina Chen | Skill gap analysis, salary analysis, career strategy |
+
+## Key Findings
+
+Five conclusions emerge from the analysis:
+
+**1. A large gender pay gap exists, and most of it is not explained by which jobs people hold.** The regression finds a raw gap of approximately $24,749 per year. Adding occupation and industry to the model explains only 9.4% of that gap, leaving roughly 90.6% that persists even when comparing men and women in the same broad jobs. This is consistent with Blau and Kahn (2017), who find a large unexplained component and conclude that discrimination cannot be ruled out.
+
+**2. The disparity concentrates at the top of the wage distribution — a glass ceiling.** K-Means clustering shows women represent close to half of the low and mid-pay tiers but under a quarter of the elite-pay tier. This matches Arulampalam, Booth, and Bryan (2007), who document that gender pay gaps are typically largest at the top of the wage distribution.
+
+**3. Gender is structurally embedded in the labor market.** A logistic regression classifier recovers a worker's sex from their economic profile alone at a ROC AUC of 0.83. Gender ranks fourth of 172 features predicting wage in the PySpark Random Forest. This separability reflects strong occupational segregation, consistent with Goldin (2014).
+
+**4. The disparity is national, not regional or demand-driven.** The state-level choropleth shows the elite-tier female share well below parity in essentially every state. Employer demand and political geography move the needle only modestly, with blue-leaning states averaging approximately 25% female in the elite tier versus 22% in red-leaning states. This indicates a structural national pattern rather than a local effect, consistent with Blau and Kahn (2017).
+
+**5. The gap widens over a career.** The Random Forest partial dependence analysis shows men's and women's predicted wages diverging sharply from the late twenties through the prime working years, consistent with the child-penalty findings of Kleven, Landais, and Søgaard (2019).
+
+---
+
+# Data Preparation
+
+## Overview
+
+The two raw datasets are extracted, cleaned, and structured into analysis-ready tables before any modeling begins.
+
+## IPUMS Data Pipeline
+
+The IPUMS data arrives as a single wide, flat file in which every row is a person and household attributes are repeated across person records. The ETL pipeline in `etl/restructure_ipums.py` normalizes this into a relational schema with four core tables: `household` (one row per household with state and weight), `person` (demographics — sex, age, race, person weight), `employment` (labor-market facts — occupation, industry, wage), and `employed_only` (the analysis-ready slice of employed people with valid wages).
+
+Two key cleaning decisions are applied: the IPUMS sentinel value 999,999 (meaning "not applicable") in the wage field is recoded to missing, and the sample is restricted to people living in households (group-quarters codes 1 and 2), removing institutional populations. Numeric codes for sex, race, state, and employment status are mapped to readable labels throughout.
+
+A second, lighter cleaning pass runs at load time via `analysis/utils.py` — keeping only positive wages, dropping records missing sex or state, and mapping detailed industry codes into broad sectors — ensuring every model and chart sees the same cleaned population.
+
+| Processed File | Rows | Description |
+|---|---|---|
+| household.csv | 1,348,324 | IPUMS household data |
+| person.csv | 3,238,312 | Individual demographic records |
+| employment.csv | 3,238,312 | Employment-related records |
+| employed_only.csv | 1,572,727 | Filtered employed individuals with valid wages |
+| industry_codes.csv | 265 | IPUMS industry code lookup |
+| occupation_codes.csv | 530 | IPUMS occupation code lookup |
+
+## Lightcast Data Pipeline
+
+The Lightcast dataset was processed through a three-stage ETL pipeline: Extract (`01_extract.ipynb`), Transform (`02_transform.ipynb`), and Load (`03_load.ipynb`). During transformation, metadata, tracking, and redundant classification fields were removed from the original 131-column raw file, yielding 52 selected columns saved as `lightcast_clean.csv`. The cleaned dataset was then decomposed into subject-area tables linked by posting identifier (`ID`): salary, location, industry, education, experience, occupation, and skills.
+
+| Processed File | Rows | Description |
+|---|---|---|
+| lightcast_job_postings_relational.csv | 72,455 | Core fact table |
+| lightcast_salary.csv | 8,092 | Salary range by job |
+| lightcast_skills.csv | 5,391,151 | Extracted skill-level records |
+| lightcast_top_skills.csv | 21 | Top aggregated skills summary |
+
+---
+
+# Exploratory Data Analysis
+
+## Gender and Wages Across Industries (IPUMS)
+
+Men out-earn women in every one of the 18 industries in the IPUMS dataset. The gap is widest in Management, where men average $143,608 against $84,137 for women — a $59,471 difference, meaning women earn just 59 cents for every male dollar. The gap is narrowest in Public Administration, where women earn 94% of male wages. Across all employed workers, women earn 70.6 cents for every dollar earned by men.
+
+The wage gap also holds across all 51 states, but its size varies geographically. It is widest in higher-wage states such as Connecticut ($34,906), Utah ($34,485), and New Jersey ($34,151), and narrowest in South Dakota ($17,084) and Iowa. This pattern suggests male wages scale up faster than female wages as a state's overall wage level rises, so prosperity alone does not narrow the divide and may even widen it in absolute terms.
+
+## Gender Disparities in IT vs. Overall Workforce (IPUMS & Lightcast)
+
+The IT workforce — defined as workers with Census occupation codes 1000–1999, corresponding to computer, mathematical, and information technology occupations — is significantly more male-dominated than the overall workforce. The overall workforce is nearly balanced at 51.8% male and 48.2% female. The IT workforce is 72.4% male and only 27.6% female.
+
+Wages are higher in IT for both genders, but the gap persists. In the overall workforce, women earn $59,562 versus $84,342 for men — a gap of $24,780. In the IT workforce, women earn $96,398 versus $119,699 for men — a gap of $23,301. Higher-paying sectors alone do not resolve gender pay inequality.
+
+The Lightcast dataset is heavily concentrated in IT and data-related roles — 93% of postings fall under Information Technology and Computer Science. Within IT, Data Analysis & Mathematics and Business Intelligence are the two dominant occupation groups, each with approximately 30,000 job postings.
+
+## Employment Rate and Income Distribution by Age and Gender (IPUMS)
+
+Employment rates increase substantially from the 18–24 age group to prime working-age groups (25–54), where both males and females maintain rates above 75%. Males exhibit slightly higher employment rates than females across nearly all age groups, with the gap more pronounced among older workers. Male workers generally have a higher median income and a wider income range than female workers. The larger spread among males indicates greater variation in earnings, including a higher concentration of high-income earners.
+
+## Job Market Demand (Lightcast)
+
+Job posting demand is heavily concentrated geographically. The top five states — Texas (7,793), California (6,885), New York (5,251), Washington D.C. (3,744), and Florida (3,521) — account for 39.7% of all posting activity. Across all 51 states, average wage and posting volume are positively but only moderately correlated for both sexes (r = 0.396 for women, r = 0.411 for men). Because the correlation is nearly identical for both sexes, job-market activity relates to wages in much the same way regardless of gender, and therefore does not by itself explain the persistent wage gap.
+
+---
+
+# Predictive Modeling
+
+## Worker Segmentation: K-Means Clustering
+
+### Methodology
+
+K-Means clustering was applied to the IPUMS employed-only population using annual wage income and age as features, both standardized because K-Means is distance-based. The number of clusters was selected by silhouette score, which was highest at four, yielding a silhouette score of 0.662. The four clusters correspond to distinct wage bands: Low pay, Mid pay, High pay, and Elite pay. All aggregates are weighted by the IPUMS person weight (PERWT) so the numbers reflect the population rather than the sample. The clustering pipeline was implemented in PySpark MLlib (`analysis/ml_kmeans_julie.py`).
+
+### Results
+
+The female share falls consistently as segment pay rises: women make up approximately 49% of the low-pay segment, close to half of the mid-pay segment, around a third of the high-pay segment, and only 23% of the elite-pay segment. This glass ceiling pattern — where women are well represented at the bottom but severely underrepresented at the top — is consistent with Arulampalam, Booth, and Bryan (2007).
+
+Linking the clusters to Lightcast job posting demand by state reveals that employer demand moves the female share in the elite tier very little. Neither a state's posting volume nor its political lean substantially changes the structural underrepresentation at the top. Blue-leaning states (2024 presidential result) average approximately 25% female in the elite tier versus 22% in red-leaning states — a modest difference that leaves both groups far below parity.
+
+## Gender Classification: Logistic Regression
+
+### Methodology
+
+A logistic regression classifier was trained using Spark MLlib to predict a worker's sex (Female vs. Male) from age, annual wage, detailed occupation, industry, state, and race, on an 80/20 train/test split of the IPUMS employed sample. The pipeline uses StringIndexer → OneHotEncoder → classifier. The aim is not to predict gender for its own sake but to measure how strongly gender is encoded in economic outcomes — the more accurately the model recovers gender from wage and job features, the more those features are themselves stratified by gender.
+
+### Results
+
+The classifier achieves a ROC AUC of 0.83 and approximately 75% accuracy on held-out workers, well above the 0.50 AUC of random guessing. In plain terms, knowing someone's wage, occupation, and industry lets the model identify their sex correctly about three times in four. This separability reflects the same structural gender sorting that the clustering and regression describe, now measured from a classification angle. This finding is consistent with Goldin (2014), who documents strong occupational segregation as a key driver of the gender wage gap.
+
+| Metric | Value |
+|---|---|
+| ROC AUC | 0.83 |
+| Accuracy | 0.751 |
+
+## Wage Gap Decomposition: Linear Regression
+
+### Methodology
+
+Two linear regression models were fit on the full IPUMS employed-only dataset (1.49 million workers with positive wages). The baseline model controls for age, race, and state only. The full model adds broad occupation and industry group codes. Comparing the gender coefficient between the two models isolates how much of the gap is explained by which jobs men and women hold versus how much persists within the same occupation and industry. This follows the Oaxaca-Blinder decomposition approach standard in labor economics (Blau & Kahn, 2017). Full code is in `analysis/ml_wage_gap_antara.ipynb`.
+
+### Results
+
+The raw gender gap, controlling only for age, race, and state, is $24,749 per year. Adding occupation and industry narrows this to $22,426 — meaning only 9.4% of the gap is explained by which jobs men and women hold. The remaining 90.6% persists even when comparing men and women in the same broad occupation and industry.
+
+| Model | R² | Gender Coefficient |
+|---|---|---|
+| Baseline (age, race, state) | 0.076 | $24,749 |
+| Full (+ occupation, industry) | 0.259 | $22,426 |
+
+The low R² values are expected for individual wage prediction — wages depend on many factors not in the dataset, such as years of experience, specific employer, and hours worked. The meaningful result is the gender coefficient, a well-estimated average effect across 1.49 million observations, which is robust regardless of overall R².
+
+Some of the unexplained 90.6% likely reflects factors not captured in this dataset, such as hours worked, seniority, or negotiation differences, but the size of the unexplained share is itself a notable finding — consistent with Blau and Kahn (2017), who document a large residual gap that cannot be attributed to measurable productive characteristics.
+
+## Feature Importance: PySpark Random Forest
+
+### Methodology
+
+A PySpark MLlib Random Forest Regressor was trained to stress-test the regression finding using a non-linear, assumption-free model. Configuration: 100 trees, max depth 10, trained on a 200,000-row random sample for computational efficiency on the EC2 instance (2 cores, shuffle partitions set to 8, data repartitioned to match available cores). The full pipeline is in `analysis/ml_rf_antara.py`. Because PySpark's OneHotEncoder retains both binary columns for a two-category variable, the Male and Female gender indicator columns are combined into a single Gender feature for the importance ranking.
+
+### Results
+
+Gender ranks fourth of 172 encoded features in the Random Forest — behind only age and two occupation groups, and ahead of every individual state, race category, and most occupation and industry codes.
+
+| Rank | Feature | Importance |
+|---|---|---|
+| 1 | Age | 0.270 |
+| 2 | Occupation: Healthcare Practitioners | 0.148 |
+| 3 | Occupation: Management | 0.145 |
+| 4 | **Gender (combined)** | **0.101** |
+| 5 | Occupation: Legal | 0.063 |
+
+| Metric | Value |
+|---|---|
+| Train R² | 0.270 |
+| Test R² | 0.236 |
+| Sample size | 200,000 |
+| Total features | 172 |
+
+### Career Trajectory
+
+Holding occupation, industry, race, and state constant, the Random Forest's predicted wage trajectory diverges between men and women starting in the mid-to-late twenties — the years typically associated with early career advancement — and the gap persists through the prime working years. This pattern is consistent with Kleven, Landais, and Søgaard (2019), who document a "child penalty" that emerges in the late twenties and accounts for much of the long-run gender earnings gap.
+
+## Consolidated Model Evaluation
+
+| Type | Model | Metric | Value |
+|---|---|---|---|
+| Clustering | K-Means | Silhouette | 0.662 |
+| Classification | Logistic Regression | ROC AUC | 0.831 |
+| Classification | Logistic Regression | Accuracy | 0.751 |
+| Regression | Linear (baseline) | R² | 0.076 |
+| Regression | Linear (full) | R² | 0.259 |
+| Regression | Random Forest | Test R² | 0.236 |
+
+Across all three modeling approaches the same conclusion recurs: gender is a strong, structural signal in the labor market that job characteristics alone do not explain away.
+
+---
+
+# Skill Gap Analysis
+
+## Overview
+
+This section compares the most in-demand skills from Lightcast 2024 IT job postings against the self-assessed skills of our team members to identify knowledge gaps and areas for improvement. Proficiency is rated on a scale of 1 (Beginner) to 5 (Expert).
+
+## Team Skill Levels
+
+| Skill | Antara | Julie | Yifan | Zhiyang | Alina | Team Avg |
+|---|---|---|---|---|---|---|
+| Python | 3 | 3 | 3 | 3 | 3 | 3.0 |
+| SQL | 4 | 3 | 3 | 3 | 3 | 3.2 |
+| Machine Learning | 2 | 2 | 2 | 2 | 1 | 1.8 |
+| AWS | 2 | 2 | 2 | 5 | 2 | 2.6 |
+| Data Visualization | 4 | 5 | 4 | 3 | 4 | 4.0 |
+| Statistics | 2 | 3 | 4 | 2 | 2 | 2.6 |
+| Big Data / Spark | 2 | 2 | 3 | 2 | 2 | 2.2 |
+| Excel | 4 | 4 | 4 | 5 | 3 | 4.0 |
+| Business Analytics | 4 | 4 | 4 | 4 | 4 | 4.0 |
+
+## Key Findings
+
+The top skills demanded by Lightcast 2024 IT job postings are Communication (31,661 postings), Data Analysis (28,515 postings), SQL, Python, and Microsoft Excel. The team's strengths — SQL, Data Visualization, Excel, and Business Analytics — align well with employer demand. The most consistent gap is Machine Learning, where every team member rated themselves 2 or below, despite ML ranking among the most sought-after skills in IT job postings. Statistics and Big Data/Spark are also consistent gaps across all members.
+
+## Improvement Plan
+
+| Team Member | Priority Skills | Recommended Resources |
+|---|---|---|
+| Antara | Machine Learning, Statistics, AWS | Coursera ML Specialization, Khan Academy Stats, AWS Training |
+| Julie | Machine Learning, AWS | fast.ai, AWS Training |
+| Yifan | Machine Learning, Statistics | Coursera ML, Khan Academy Statistics |
+| Zhiyang | Statistics | Khan Academy Statistics |
+| Alina | Machine Learning, Advanced SQL | Coursera ML, Mode SQL Tutorial |
+
+---
+
+# Career Strategy
+
+## Overview
+
+This section maps individual skill gaps to concrete career development actions for each team member, benchmarked against Lightcast 2024 IT job posting demand.
+
+## Career Path Targets
+
+| Team Member | Target Role | Top Strengths | Priority Gap |
+|---|---|---|---|
+| Antara | Data Engineer / Analytics Engineer | SQL, Data Visualization, Business Analytics | Machine Learning, Statistics |
+| Julie | Data Analyst / Business Intelligence | Data Visualization, Statistics | Machine Learning, AWS |
+| Yifan | Data Analyst / Data Engineer | Statistics, Big Data/Spark | Machine Learning |
+| Zhiyang | Business Analyst / Cloud Analyst | AWS (5/5), Excel (5/5) | Statistics |
+| Alina | TBD | Data Visualization, Business Analytics | Machine Learning, SQL |
+
+## Shared Priority: Machine Learning
+
+Every team member rated Machine Learning at 2 or below — the single most consistent gap across the group. Given that ML ranks among the most demanded skills in Lightcast IT job postings, this is the team's top collective development priority. Recommended resources include the Coursera Machine Learning Specialization (Andrew Ng), fast.ai Practical Deep Learning, and Databricks Academy Apache Spark ML.
+
+## Team Collaboration Plan
+
+| Lead | Area |
+|---|---|
+| Antara | Data Cleaning, SQL, Business Analytics |
+| Julie | Data Visualization, EDA |
+| Yifan | ETL Pipeline, Spark Processing, GitHub |
+| Zhiyang | AWS, Business Analysis |
+| Alina | Skill Gap Analysis, Career Strategy, Presentation |
+
+---
+
+# References
+
+Arulampalam, W., Booth, A. L., & Bryan, M. L. (2007). Is there a glass ceiling over Europe? Exploring the gender pay gap across the wage distribution. *ILR Review*, 60(2), 163–186. https://doi.org/10.1177/001979390706000201
+
+Blau, F. D., & Kahn, L. M. (2017). The gender wage gap: Extent, trends, and explanations. *Journal of Economic Literature*, 55(3), 789–865. https://doi.org/10.1257/jel.20160995
+
+Goldin, C. (2014). A grand gender convergence: Its last chapter. *American Economic Review*, 104(4), 1091–1119. https://doi.org/10.1257/aer.104.4.1091
+
+IPUMS USA. (2024). *American Community Survey 2024*. University of Minnesota. https://usa.ipums.org
+
+Kleven, H., Landais, C., & Søgaard, J. E. (2019). Children and gender inequality: Evidence from Denmark. *American Economic Journal: Applied Economics*, 11(4), 181–209. https://doi.org/10.1257/app.20180010
+
+Lightcast. (2024). *Job postings database 2024*. Lightcast. https://lightcast.io
