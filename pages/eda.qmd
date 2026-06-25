@@ -4,6 +4,9 @@ execute:
   echo: true
   eval: true
   code-fold: true
+format:
+  html:
+    code-fold: true
 ---
 
 ## Overview
