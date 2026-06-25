@@ -52,7 +52,7 @@ cluster_to_segment = dict(zip(profile["cluster"], profile["segment"]))
 
 The silhouette score is highest at four clusters, which split the workforce into a large low-pay group, a mid-pay group, a smaller high-pay group, and a very small elite-pay group. The table below profiles each segment by its weighted average wage, average age, female share, and the industries its workers most commonly come from.
 
-## Methodology Note
+### Methodology Note
 
 The clustering and the state-level join are computed with Spark MLlib in `analysis/ml_kmeans_julie.py` and `analysis/ml_state_join_julie.py`, both built on the shared helpers in `analysis/spark_utils.py`. Running Spark on 1.57 million worker records is too heavy to execute on every site render, so the pipeline writes its results to `data/processed/`, and this page loads those saved outputs to present the figures. The features given to K-Means are annual wage income and age, both standardized because K-Means is distance based, and we select the number of clusters by silhouette score. All aggregates are weighted by the IPUMS person weight (PERWT) so the numbers reflect the population rather than the sample.
 
