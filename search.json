@@ -291,28 +291,28 @@
     "href": "pages/introduction.html",
     "title": "Project Overview",
     "section": "",
-    "text": "How large is the gender pay gap among U.S. workers, and how much of it is explained by occupation and industry rather than factors that persist within the same jobs?\nDo gender-based employment disparities vary between red and blue states?\nWhere in the wage distribution does the gender gap concentrate, and does women’s representation decline as pay rises?"
+    "text": "How much of the gender wage gap can be explained by occupation and industry?\nDoes gender remain important after accounting for other factors?\nWhere are women underrepresented in the workforce?\nDoes political geography have influence on the wage disparity?"
   },
   {
     "objectID": "pages/introduction.html#research-questions",
     "href": "pages/introduction.html#research-questions",
     "title": "Project Overview",
     "section": "",
-    "text": "How large is the gender pay gap among U.S. workers, and how much of it is explained by occupation and industry rather than factors that persist within the same jobs?\nDo gender-based employment disparities vary between red and blue states?\nWhere in the wage distribution does the gender gap concentrate, and does women’s representation decline as pay rises?"
+    "text": "How much of the gender wage gap can be explained by occupation and industry?\nDoes gender remain important after accounting for other factors?\nWhere are women underrepresented in the workforce?\nDoes political geography have influence on the wage disparity?"
   },
   {
     "objectID": "pages/introduction.html#dataset",
     "href": "pages/introduction.html#dataset",
     "title": "Project Overview",
     "section": "Dataset",
-    "text": "Dataset\n\nPrimary: Lightcast 2024 Job Postings (~72,000 records after ETL)\nSupplementary: IPUMS Household data (1.3M rows)"
+    "text": "Dataset\n\nPrimary: Lightcast 2024 Job Postings (~72,000 records after ETL)\nSupplementary: IPUMS Household data (1.5M rows)"
   },
   {
     "objectID": "pages/introduction.html#team",
     "href": "pages/introduction.html#team",
     "title": "Project Overview",
     "section": "Team",
-    "text": "Team\n\n\n\nName\nGitHub\n\n\n\n\nJulie Ngo Tran\n@frjulie8-proj\n\n\nAlina Chen\n@alinayanxi\n\n\nYifan Cui\n@cyifan25dot\n\n\nZhiyang Guo\n@guozyang6\n\n\nAntara Sudhir\n@sudhirantara"
+    "text": "Team\n\n\n\nName\nGitHub\n\n\n\n\nJulie Ngo Tran\n@frjulie8-proj\n\n\nAntara Sudhir\n@sudhirantara\n\n\nAlina Chen\n@alinayanxi\n\n\nYifan Cui\n@cyifan25dot\n\n\nZhiyang Guo\n@guozyang6"
   },
   {
     "objectID": "pages/introduction.html#project-phases",
