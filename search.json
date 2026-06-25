@@ -221,35 +221,42 @@
     "href": "pages/career_plan.html",
     "title": "Career Strategy",
     "section": "",
-    "text": "This section maps individual skill gaps identified in the Skill Gap Analysis to concrete career development actions for each team member."
+    "text": "This section maps individual skill gaps identified in the Skill Gap Analysis to concrete career development actions for each team member. Proficiency ratings are self-assessed on a 1–5 scale and benchmarked against Lightcast 2024 IT job posting demand."
   },
   {
     "objectID": "pages/career_plan.html#overview",
     "href": "pages/career_plan.html#overview",
     "title": "Career Strategy",
     "section": "",
-    "text": "This section maps individual skill gaps identified in the Skill Gap Analysis to concrete career development actions for each team member."
+    "text": "This section maps individual skill gaps identified in the Skill Gap Analysis to concrete career development actions for each team member. Proficiency ratings are self-assessed on a 1–5 scale and benchmarked against Lightcast 2024 IT job posting demand."
   },
   {
     "objectID": "pages/career_plan.html#career-path-targets",
     "href": "pages/career_plan.html#career-path-targets",
     "title": "Career Strategy",
     "section": "Career Path Targets",
-    "text": "Career Path Targets\n\n\n\nTeam Member\nTarget Role\n\n\n\n\nJulie\nData Analyst / Business Intelligence\n\n\nYifan\nData Analyst / Data Engineer\n\n\nZhiyang\nAnalyst\n\n\nAlina\nTBD\n\n\nAntara\nData Engineer / Analytics"
+    "text": "Career Path Targets\n\n\n\n\n\n\n\n\n\nTeam Member\nTarget Role\nTop Strengths\nPriority Gap\n\n\n\n\nAntara\nData Engineer / Analytics Engineer\nSQL, Data Visualization, Business Analytics\nMachine Learning, Statistics\n\n\nJulie\nData Analyst / Business Intelligence\nData Visualization, Statistics\nMachine Learning, AWS\n\n\nYifan\nData Analyst / Data Engineer\nStatistics, Big Data/Spark, Excel\nMachine Learning\n\n\nZhiyang\nBusiness Analyst / Cloud Analyst\nAWS (5/5), Excel (5/5)\nStatistics\n\n\nAlina\nTBD\nData Visualization, Business Analytics\nMachine Learning, SQL"
   },
   {
-    "objectID": "pages/career_plan.html#action-plan-framework",
-    "href": "pages/career_plan.html#action-plan-framework",
+    "objectID": "pages/career_plan.html#shared-priority-machine-learning",
+    "href": "pages/career_plan.html#shared-priority-machine-learning",
     "title": "Career Strategy",
-    "section": "Action Plan Framework",
-    "text": "Action Plan Framework\nFor each team member:\n\nPriority skills based on gap vs. industry expectation\nRecommended resources: courses, certifications, projects\nTimeline: short-term (1-3 months) vs. long-term (6-12 months)"
+    "section": "Shared Priority: Machine Learning",
+    "text": "Shared Priority: Machine Learning\nEvery team member rated Machine Learning at 2 or below — the single most consistent gap across the group. Given that ML ranks among the most demanded skills in Lightcast IT job postings, this is the team’s top collective development priority.\nRecommended resources: - Coursera Machine Learning Specialization (Andrew Ng) - fast.ai — Practical Deep Learning - Databricks Academy — Apache Spark ML"
   },
   {
-    "objectID": "pages/career_plan.html#status",
-    "href": "pages/career_plan.html#status",
+    "objectID": "pages/career_plan.html#individual-improvement-plans",
+    "href": "pages/career_plan.html#individual-improvement-plans",
     "title": "Career Strategy",
-    "section": "Status",
-    "text": "Status\nTo be completed after skill gap ratings are finalized by all team members."
+    "section": "Individual Improvement Plans",
+    "text": "Individual Improvement Plans\n\n\n\n\n\n\n\n\nTeam Member\nPriority Skills\nResources\n\n\n\n\nAntara\nMachine Learning, Statistics, AWS\nCoursera ML, Khan Academy Stats, AWS Training\n\n\nJulie\nMachine Learning, AWS\nfast.ai, AWS Training\n\n\nYifan\nMachine Learning, Statistics\nCoursera ML, Khan Academy Statistics\n\n\nZhiyang\nStatistics\nKhan Academy Statistics\n\n\nAlina\nMachine Learning, Advanced SQL\nCoursera ML, Mode SQL Tutorial"
+  },
+  {
+    "objectID": "pages/career_plan.html#team-collaboration-plan",
+    "href": "pages/career_plan.html#team-collaboration-plan",
+    "title": "Career Strategy",
+    "section": "Team Collaboration Plan",
+    "text": "Team Collaboration Plan\n\n\n\nLead\nArea\n\n\n\n\nAntara\nData Cleaning, SQL, Business Analytics\n\n\nJulie\nData Visualization, EDA\n\n\nYifan\nETL Pipeline, Spark Processing, GitHub\n\n\nZhiyang\nAWS, Business Analysis\n\n\nAlina\nSkill Gap Analysis, Career Strategy, Presentation"
   },
   {
     "objectID": "index.html",
