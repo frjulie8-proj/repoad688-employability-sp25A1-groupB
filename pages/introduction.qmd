@@ -4,24 +4,26 @@ title: Project Overview
 
 ## Research Questions
 
-1. How large is the gender pay gap among U.S. workers, and how much of it is explained by occupation and industry rather than factors that persist within the same jobs?
-2. Do gender-based employment disparities vary between red and blue states?
-3. Where in the wage distribution does the gender gap concentrate, and does women's representation decline as pay rises?
+  1. How much of the gender wage gap can be explained by occupation and industry?
+  2. Does gender remain important after accounting for other factors?
+  3. Where are women underrepresented in the workforce?
+  4. Does political geography have influence on the wage disparity?
 
 ## Dataset
 
 - **Primary:** Lightcast 2024 Job Postings (~72,000 records after ETL)
-- **Supplementary:** IPUMS Household data (1.3M rows)
+- **Supplementary:** IPUMS Household data (1.5M rows)
 
 ## Team
 
 | Name | GitHub |
 |------|--------|
 | Julie Ngo Tran | [@frjulie8-proj](https://github.com/frjulie8-proj) |
+| Antara Sudhir | [@sudhirantara](https://github.com/sudhir-antara) |
 | Alina Chen | [@alinayanxi](https://github.com/alinayanxi) |
 | Yifan Cui | [@cyifan25dot](https://github.com/cyifan25-dot) |
 | Zhiyang Guo | [@guozyang6](https://github.com/guozyang-6) |
-| Antara Sudhir | [@sudhirantara](https://github.com/sudhir-antara) |
+
 
 ## Project Phases
 
