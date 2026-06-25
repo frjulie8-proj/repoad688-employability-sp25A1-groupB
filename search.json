@@ -144,28 +144,14 @@
     "href": "pages/eda.html",
     "title": "Exploratory Data Analysis",
     "section": "",
-    "text": "Exploratory Data Analysis of the 2024 Lightcast job postings and IPUMS employment datasets."
+    "text": "This page presents exploratory analysis of the 2024 IPUMS employment dataset and Lightcast IT job postings, contributed by each team member. Julie examinesthe gender wage gap by industry and state and links job market activity to wages across states. Antara compares gender representation and wages between the IT workforce and the overall workforce. Yifan analyzes employment rates and income distributions by age and gender. Zhiyang explores industry concentration and geographic household distribution. Alina examines salary transparency and industry distribution in the Lightcast and IPUMS datasets."
   },
   {
     "objectID": "pages/eda.html#overview",
     "href": "pages/eda.html#overview",
     "title": "Exploratory Data Analysis",
     "section": "",
-    "text": "Exploratory Data Analysis of the 2024 Lightcast job postings and IPUMS employment datasets."
-  },
-  {
-    "objectID": "pages/eda.html#alina-salary-analysis-from-lightcast",
-    "href": "pages/eda.html#alina-salary-analysis-from-lightcast",
-    "title": "Exploratory Data Analysis",
-    "section": "Alina: Salary Analysis from Lightcast",
-    "text": "Alina: Salary Analysis from Lightcast\nThis section analyzes salary information from Lightcast job postings. The salary table contains 72,498 job postings, but only 32,398 postings include salary information, meaning approximately 55.3% of postings do not disclose salary fields.\n\nThe salary distribution shows that most postings with disclosed salary information cluster below the highest-paying outliers. The median lower-bound salary is approximately $88,000, while the mean is about $94,005, suggesting a right-skewed distribution.\n\nThe boxplot confirms that salary postings contain substantial high-end outliers. This suggests that salary transparency and compensation levels vary widely across job postings and occupational categories."
-  },
-  {
-    "objectID": "pages/eda.html#alina-ipums-industry-distribution-analysis",
-    "href": "pages/eda.html#alina-ipums-industry-distribution-analysis",
-    "title": "Exploratory Data Analysis",
-    "section": "Alina: IPUMS Industry Distribution Analysis",
-    "text": "Alina: IPUMS Industry Distribution Analysis\nThe IPUMS dataset contains 264 industry categories.\n\nThe histogram illustrates the distribution of industry codes across the lookup table."
+    "text": "This page presents exploratory analysis of the 2024 IPUMS employment dataset and Lightcast IT job postings, contributed by each team member. Julie examinesthe gender wage gap by industry and state and links job market activity to wages across states. Antara compares gender representation and wages between the IT workforce and the overall workforce. Yifan analyzes employment rates and income distributions by age and gender. Zhiyang explores industry concentration and geographic household distribution. Alina examines salary transparency and industry distribution in the Lightcast and IPUMS datasets."
   },
   {
     "objectID": "pages/eda.html#julie-gender-wages-ipums",
@@ -215,6 +201,20 @@
     "title": "Exploratory Data Analysis",
     "section": "Zhiyang: Industry and Household Distribution",
     "text": "Zhiyang: Industry and Household Distribution\nThis section explores the distribution of job postings across industries and the geographic distribution of household records. By comparing labor market demand and household concentration, we can better understand both economic activity and demographic coverage in the dataset.\n\nTop 10 Industries by Job Postings\nThis plot examines which industries have the highest number of job postings in the Lightcast dataset. It helps identify the sectors with the strongest hiring demand and provides insight into labor market concentration.\n\nimport pandas as pd\nimport plotly.express as px\n\nindustry = pd.read_csv(\"../data/processed/lightcast_industry.csv\")\n\ntop_industries = industry[\"NAICS_2022_6_NAME\"].value_counts().head(10)\n\ntop_industries_df = top_industries.reset_index()\ntop_industries_df.columns = [\"Industry\", \"Count\"]\n\nfig = px.bar(\n    top_industries_df,\n    x=\"Count\",\n    y=\"Industry\",\n    orientation=\"h\",\n    title=\"Top 10 Industries by Job Postings\"\n)\n\nfig.update_layout(\n    yaxis=dict(categoryorder=\"total ascending\"),\n    height=700\n)\n\nfig.show()\n\n                            \n                                            \n\n\nThe results show that job postings are concentrated in a relatively small number of industries. Unclassified sectors and technology-related services account for the largest share, highlighting the dominance of digital and business service roles in the current labor market.\n\n\n\nTop 10 States by Household Count\nThis plot explores the distribution of household records by state in the IPUMS dataset. It provides a geographic perspective on data coverage and shows which regions contribute the largest number of observations.\n\nhousehold = pd.read_parquet(\"../data/processed/employed_only.parquet\")\n\ntop_states = household[\"STATE_NAME\"].value_counts().head(10)\n\ntop_states_df = top_states.reset_index()\ntop_states_df.columns = [\"State\", \"Count\"]\n\nfig = px.bar(\n    top_states_df,\n    x=\"Count\",\n    y=\"State\",\n    orientation=\"h\",\n    title=\"Top 10 States by Household Count\"\n)\n\nfig.update_layout(\n    yaxis=dict(categoryorder=\"total ascending\"),\n    height=700\n)\n\nfig.show()\n\n                            \n                                            \n\n\nThe chart indicates that household records are heavily concentrated in a few states, suggesting uneven regional representation. This pattern may influence later analyses involving employment, wages, and demographic segmentation."
+  },
+  {
+    "objectID": "pages/eda.html#alina-salary-analysis-from-lightcast",
+    "href": "pages/eda.html#alina-salary-analysis-from-lightcast",
+    "title": "Exploratory Data Analysis",
+    "section": "Alina: Salary Analysis from Lightcast",
+    "text": "Alina: Salary Analysis from Lightcast\nThis section analyzes salary information from Lightcast job postings. The salary table contains 72,498 job postings, but only 32,398 postings include salary information, meaning approximately 55.3% of postings do not disclose salary fields.\n\nThe salary distribution shows that most postings with disclosed salary information cluster below the highest-paying outliers. The median lower-bound salary is approximately $88,000, while the mean is about $94,005, suggesting a right-skewed distribution.\n\nThe boxplot confirms that salary postings contain substantial high-end outliers. This suggests that salary transparency and compensation levels vary widely across job postings and occupational categories."
+  },
+  {
+    "objectID": "pages/eda.html#alina-ipums-industry-distribution-analysis",
+    "href": "pages/eda.html#alina-ipums-industry-distribution-analysis",
+    "title": "Exploratory Data Analysis",
+    "section": "Alina: IPUMS Industry Distribution Analysis",
+    "text": "Alina: IPUMS Industry Distribution Analysis\nThe IPUMS dataset contains 264 industry categories.\n\nThe histogram illustrates the distribution of industry codes across the lookup table."
   },
   {
     "objectID": "pages/career_plan.html",
