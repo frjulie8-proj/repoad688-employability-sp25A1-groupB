@@ -3,6 +3,10 @@ title: "Skill Gap Analysis"
 execute:
   freeze: false
   cache: false
+  echo: true
+format:
+  html:
+    code-fold: true
 ---
 
 ## Overview
