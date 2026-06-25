@@ -19,6 +19,7 @@ This project investigates gender disparities in hiring and wages across the U.S.
 ## Live Site
 
 👉 [View the project site](https://frjulie8-proj.github.io/repoad688-employability-sum26-groupB/)
+
 📊 [View the presentation slide deck](assets/AD688_Slide_Deck.pdf)
 
 ---
